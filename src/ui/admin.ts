@@ -247,7 +247,7 @@ const words = (code: string) => {
 let sheet: CSSStyleSheet | null = null;
 
 export class CheerkitAdminElement extends HTMLElement {
-  static readonly observedAttributes = ["theme", "color"];
+  static readonly observedAttributes = ["theme", "color", "site-name"];
 
   #config: AdminConfig = {};
   #client: OwnerClient | null = null;
@@ -354,8 +354,9 @@ export class CheerkitAdminElement extends HTMLElement {
     document.removeEventListener("visibilitychange", this.#onVisible);
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(name: string) {
     this.#applyAppearance();
+    if (name === "site-name" && this.isConnected) this.#renderSite();
   }
 
   #hasFocusedControl() {
@@ -413,8 +414,16 @@ export class CheerkitAdminElement extends HTMLElement {
     const name = h(
       "div",
       {},
-      h("strong", {}, this.#config.siteName ?? text.adminLabel),
-      this.#config.siteName ? h("span", {}, text.adminLabel) : null,
+      h(
+        "strong",
+        {},
+        this.#config.siteName ??
+          this.getAttribute("site-name") ??
+          text.adminLabel,
+      ),
+      this.#config.siteName || this.getAttribute("site-name")
+        ? h("span", {}, text.adminLabel)
+        : null,
     );
     this.#site.replaceChildren(
       ...(logo

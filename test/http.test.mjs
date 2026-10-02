@@ -371,7 +371,19 @@ test("owner routes require host authorization and an allowed origin for changes"
   );
   const list = await f.handler(owner("/contributions?contextId=work&limit=5"));
   assert.equal(list.status, 200);
+  assert.equal(list.headers.get("Cross-Origin-Resource-Policy"), "same-origin");
   assert.equal((await list.json())[0].intent.message, "Private message");
+  const crossSite = await f.handler(
+    owner("/summary", { headers: { "Sec-Fetch-Site": "cross-site" } }),
+  );
+  assert.deepEqual(
+    [
+      crossSite.status,
+      crossSite.headers.get("Cross-Origin-Resource-Policy"),
+      await crossSite.json(),
+    ],
+    [403, "same-origin", { error: "cross_site_request" }],
+  );
   assert.equal((await f.handler(owner(`/contributions/${id}`))).status, 200);
   assert.equal((await f.handler(owner("/contributions/missing"))).status, 404);
   const replayPath = `/contributions/${id}/resend-notices`;

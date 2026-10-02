@@ -260,17 +260,24 @@ function createHandler(
   const origins = new Origins(options.allowedOrigins);
   return async (request: Request): Promise<Response> => {
     let name = "unknown";
+    let ownerRequest = false;
     try {
       const pathname = new URL(request.url).pathname;
       if (pathname !== basePath && !pathname.startsWith(`${basePath}/`))
         throw new HttpError(404, "not_found");
-      const [routeName, work] = route(
-        request,
-        pathname.slice(basePath.length).split("/").filter(Boolean),
-        origins,
-      );
+      const path = pathname.slice(basePath.length).split("/").filter(Boolean);
+      ownerRequest = path[0] === "owner";
+      const [routeName, work] = route(request, path, origins);
       name = routeName;
-      return await work();
+      const response = await work();
+      if (!ownerRequest) return response;
+      const headers = new Headers(response.headers);
+      headers.set("Cross-Origin-Resource-Policy", "same-origin");
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     } catch (error) {
       const { status, code } = errorResponse(error);
       if (status >= 500 || name === "webhook")
@@ -279,7 +286,12 @@ function createHandler(
       return json(
         status,
         { error: code },
-        status === 503 ? { "Retry-After": "30" } : {},
+        {
+          ...(status === 503 ? { "Retry-After": "30" } : {}),
+          ...(ownerRequest
+            ? { "Cross-Origin-Resource-Policy": "same-origin" }
+            : {}),
+        },
       );
     }
   };
@@ -326,6 +338,8 @@ function ownerRoute(
   path: string[],
   origins: Origins,
 ): Route {
+  if (request.headers.get("Sec-Fetch-Site") === "cross-site")
+    throw new HttpError(403, "cross_site_request");
   const [, area, id, action, extra] = path;
   const method = request.method;
   const url = new URL(request.url);

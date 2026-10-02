@@ -223,6 +223,9 @@ const files = new Set([
   "strict.html",
   "strict.js",
   "strict.css",
+  "brands.html",
+  "brands.js",
+  "brands.css",
 ]);
 const uiFiles = new Set([
   "define.js",

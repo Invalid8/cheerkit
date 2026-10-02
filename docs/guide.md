@@ -189,6 +189,7 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
 - **Where it shows:** `layout="page"` or `"inline"` renders in place; `layout="dialog"` opens from any element with `data-cheerkit-open="<context>"` or from `element.open()`.
 - **After checkout:** put `<cheerkit-support … view="result">` on the page your Bachs success URL points to. It checks the payment, thanks the supporter, and lets them remove their name and message.
 - **Your colour:** `color="#…"` sets the theme colour; text on it switches between white and near-black to stay readable. `theme="dark"` or `theme="system"` turns on dark mode (light by default). Every colour, the font, corner radius, and border width can also be set from your CSS (`cheerkit-support { --ck-color-primary: …; }`) or `config.appearance.variables`. The browser console warns once if the primary color and its text fall below a 4.5:1 contrast ratio.
+- **Theme tokens:** [`tokens/cheerkit.tokens.json`](../tokens/cheerkit.tokens.json) lists the default light and dark values in Design Tokens Community Group format. The same names map to the component's public `--ck-*` CSS properties.
 - **Your words:** every label and message can be changed through `config.text`; amounts are formatted for `config.locale`.
 - **Finer styling:** named parts (`card`, `header`, `avatar`, `title`, `amount`, `input`, `button`, …) can be styled with `::part()`.
 - **Your own UI on the same logic:** `createSupport({ api, contextId })` from `cheerkit/ui` gives the state and actions the template uses.
@@ -196,6 +197,8 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
 The browser keeps only a random submission key and the result token, in `sessionStorage`, never the name, message, or amount. Currencies, amounts, and which fields appear come from the context on the server, so a context with one currency shows no currency switch.
 
 For a local check under an enforcing Content Security Policy, run `npm run dev` and open `/strict.html`. It loads both templates with external scripts and styles, `style-src-attr 'none'`, and Trusted Types required for script sinks. Check the browser console for policy violations while using the support form and signing into the demo admin.
+
+To compare accent colours while keeping the same layout and interaction, open `/brands.html`. It shows the same support component under three host palettes and copy choices.
 
 ## Webhooks and background work
 
@@ -291,6 +294,17 @@ It shares the support template's appearance settings and warns once in the brows
 - It uses the same colour, theme, wording (`config.text`), and CSS variables as the support template. `config.screens` chooses which screens appear.
 - On narrow screens the navigation becomes a picker and tables become labelled cards.
 - To build your own admin instead, `createOwnerClient({ api })` from `cheerkit/ui` gives typed calls for every owner route.
+
+### Run the same admin on your computer
+
+Use the local runner when the owner UI should not be deployed. It opens the existing Cheerkit database and uses the site's Bachs key from a local config module. The database adapter and key stay in the Node process; the browser receives only the admin UI and a short-lived session cookie.
+
+1. Apply Cheerkit's migrations to the database as usual. Keep the config module and database credentials readable only by the owner.
+2. Copy [`examples/ui/local-admin.config.example.mjs`](../examples/ui/local-admin.config.example.mjs) to `cheerkit.admin.mjs` and set the environment values it reads. For PostgreSQL, return `postgresDatabase(pool)` and close the pool in `close()`; the `pg` driver is supplied by your application.
+3. Run `cheerkit-admin --config ./cheerkit.admin.mjs`. Port 0 selects an available port. The runner binds only to `127.0.0.1` and prints a random one-use link that expires after five minutes. Open it locally; it exchanges the link for an HttpOnly, SameSite=Strict cookie and removes the token from the address bar.
+4. Keep the process running while using the admin. Press Ctrl-C to revoke sessions and close the configured database connection.
+
+The local server accepts only loopback Host values, blocks cross-site API requests, requires the matching local Origin for changes, and sends a restrictive CSP, `frame-ancestors 'none'`, `Cross-Origin-Resource-Policy: same-origin`, and no-store headers. The session expires after 12 hours or when the process stops. No password or Bachs key is sent to the browser. Protect the machine account and the local config just as you protect the application's database credentials.
 
 ## When something goes wrong
 

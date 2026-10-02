@@ -127,14 +127,17 @@ npm install cheerkit
 
 ## Package
 
-| Import              | For                                                                                                   | In browsers |
-| ------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
-| `cheerkit`          | Contexts, amounts, intents, metadata validation                                                       | Yes         |
-| `cheerkit/bachs`    | Bachs provider: clients and webhook verification                                                      | No          |
-| `cheerkit/postgres` | Adapter for a `pg` pool (no dependency on `pg`)                                                       | No          |
-| `cheerkit/sqlite`   | Adapter for a `node:sqlite` database                                                                  | No          |
-| `cheerkit/server`   | Migrations, store, services, HTTP handlers, background worker                                         | No          |
-| `cheerkit/ui`       | Ready-made templates (`<cheerkit-support>`, `<cheerkit-admin>`), `createSupport`, `createOwnerClient` | Only        |
+| Import                        | For                                                                                                   | In browsers |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
+| `cheerkit`                    | Contexts, amounts, intents, metadata validation                                                       | Yes         |
+| `cheerkit/bachs`              | Bachs provider: clients and webhook verification                                                      | No          |
+| `cheerkit/postgres`           | Adapter for a `pg` pool (no dependency on `pg`)                                                       | No          |
+| `cheerkit/sqlite`             | Adapter for a `node:sqlite` database                                                                  | No          |
+| `cheerkit/server`             | Migrations, store, services, HTTP handlers, background worker                                         | No          |
+| `cheerkit/server/local-admin` | Local loopback-only admin runner (`startLocalAdmin`)                                                  | No          |
+| `cheerkit/ui`                 | Ready-made templates (`<cheerkit-support>`, `<cheerkit-admin>`), `createSupport`, `createOwnerClient` | Only        |
+
+The `cheerkit-admin` executable starts the local admin from a host-owned config module; see [the guide](docs/guide.md#run-the-same-admin-on-your-computer).
 
 ## Documentation
 

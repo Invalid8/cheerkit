@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/brands.css" />
+    <title>Cheerkit theme customization</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Same component, host-owned theme</p>
+        <h1>Adjust the colour to fit the site</h1>
+        <p>
+          Layout and behavior stay consistent; each host sets one accent and its
+          own copy.
+        </p>
+      </header>
+      <div class="examples">
+        <section class="brand brand--navy" aria-labelledby="navy-title">
+          <h2 id="navy-title">Field Notes</h2>
+          <cheerkit-support
+            api="/api/support"
+            context="my-work"
+            layout="inline"
+          ></cheerkit-support>
+        </section>
+        <section class="brand brand--green" aria-labelledby="green-title">
+          <h2 id="green-title">Garden Journal</h2>
+          <cheerkit-support
+            api="/api/support"
+            context="my-work"
+            layout="inline"
+          ></cheerkit-support>
+        </section>
+        <section class="brand brand--plum" aria-labelledby="plum-title">
+          <h2 id="plum-title">Small Press</h2>
+          <cheerkit-support
+            api="/api/support"
+            context="my-work"
+            layout="inline"
+          ></cheerkit-support>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="/brands.js"></script>
+  </body>
+</html>

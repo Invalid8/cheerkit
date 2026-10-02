@@ -184,7 +184,7 @@ Both take a Fetch `Request` and return a `Response`.
 | `clientKey`       | Support  | Trusted caller identity for rate limiting                                                    |
 | `initiationLimit` | Support  | `{ requests, windowSeconds }` for starts and resumes, default 10 per 60 seconds, per process |
 
-Every response is JSON with `Cache-Control: no-store`, `nosniff`, and `no-referrer`. No CORS headers are sent. Bodies are limited (16 KiB public, 64 KiB owner, 1 MiB webhook), JSON routes require `application/json`, and owner changes require an allowed `Origin` header.
+Every response is JSON with `Cache-Control: no-store`, `nosniff`, and `no-referrer`. No CORS headers are sent. Owner responses also use `Cross-Origin-Resource-Policy: same-origin`, and owner routes refuse requests marked `Sec-Fetch-Site: cross-site`. Bodies are limited (16 KiB public, 64 KiB owner, 1 MiB webhook), JSON routes require `application/json`, and owner changes require an allowed `Origin` header.
 
 ### Routes
 
@@ -221,6 +221,21 @@ The public contribution is `{ contributionId, contextId, outcome, amount, curren
 | `runPendingPass(service, { pageSize, maxPages })`                                    | One pass over waiting events, for scheduled routes                                                                          |
 
 Callbacks receive counts and error codes only.
+
+### Local admin runner
+
+Available from `cheerkit/server/local-admin`:
+
+```ts
+const app = await startLocalAdmin(
+  { store, bachs, siteName: "My site", close: () => database.close() },
+  { port: 0 },
+);
+console.log(app.accessUrl); // one-use link; expires after five minutes
+await app.close();
+```
+
+`LocalAdminConfig` requires the existing `store` and `bachs` client; `siteName` and `close` are optional. The runner binds only to `127.0.0.1`, serves the shared `<cheerkit-admin>` UI, and uses an in-memory 12-hour session. It never serializes the store or Bachs client to the browser. The `cheerkit-admin` executable accepts `--config <module.mjs>` and `--port <0–65535>`; port 0 is the default.
 
 ## `cheerkit/ui`
 

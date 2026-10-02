@@ -14,6 +14,7 @@
   "files": [
     "dist",
     "docs",
+    "tokens",
     "CHANGELOG.md",
     "examples/core.mjs",
     "examples/service.mjs",
@@ -22,6 +23,9 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "cheerkit-admin": "./dist/server/local-admin-cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -46,6 +50,11 @@
       "types": "./dist/server/index.d.ts",
       "browser": null,
       "import": "./dist/server/index.js"
+    },
+    "./server/local-admin": {
+      "types": "./dist/server/local-admin.d.ts",
+      "browser": null,
+      "import": "./dist/server/local-admin.js"
     },
     "./ui": {
       "types": "./dist/ui/index.d.ts",
