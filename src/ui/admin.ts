@@ -265,6 +265,7 @@ export class CheerkitAdminElement extends HTMLElement {
   #site: HTMLElement;
   #drawer: HTMLDialogElement;
   #modal: HTMLDialogElement;
+  #drawerReturnFocus: HTMLElement | null = null;
   #onVisible = () => {
     if (
       document.visibilityState === "visible" &&
@@ -304,6 +305,15 @@ export class CheerkitAdminElement extends HTMLElement {
       part: "modal",
       "aria-labelledby": "ck-modal-title",
     }) as HTMLDialogElement;
+    this.#drawer.addEventListener("close", () => {
+      const target = this.#drawerReturnFocus;
+      this.#drawerReturnFocus = null;
+      if (target?.isConnected) {
+        target.focus();
+        return;
+      }
+      this.#main.querySelector<HTMLElement>(".page-title")?.focus();
+    });
     root.append(
       h(
         "div",
@@ -871,6 +881,13 @@ export class CheerkitAdminElement extends HTMLElement {
 
   async #openDetail(id: string, message?: [string, string]) {
     const client = this.#client!;
+    const opening = !this.#drawer.open;
+    if (opening) {
+      this.#drawerReturnFocus =
+        this.shadowRoot?.activeElement instanceof HTMLElement
+          ? this.shadowRoot.activeElement
+          : null;
+    }
     try {
       const [contribution, events] = await Promise.all([
         client.getContribution(id),
@@ -895,6 +912,10 @@ export class CheerkitAdminElement extends HTMLElement {
         ),
       );
       if (!this.#drawer.open) this.#drawer.showModal();
+      this.#drawer
+        .querySelector<HTMLElement>(".drawer-body")
+        ?.setAttribute("tabindex", "-1");
+      this.#drawer.querySelector<HTMLElement>(".drawer-body")?.focus();
     }
   }
 
