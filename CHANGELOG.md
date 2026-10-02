@@ -21,5 +21,5 @@ First release.
 - Framework-free examples: support page, modal, result page, and owner admin.
 - `cheerkit/ui`: a ready-made support template, `<cheerkit-support>`, for any site (page, dialog, and result views; theme colour, dark mode, wording, and parts adjustable), and `createSupport` for custom interfaces on the same logic.
 - `<cheerkit-admin>`: a ready-made owner admin (contributions, detail and actions, unmatched notices, contexts, follow-up actions, export), and `createOwnerClient` with typed calls for every owner route.
-- The templates warn in the browser console when configured text on the primary color is below a 4.5:1 contrast ratio. Admin dialogs have accessible names, keyboard focus remains visible, and tab-return refreshes avoid interrupting active controls.
+- The templates warn in the browser console when configured text on the primary color is below a 4.5:1 contrast ratio. Admin dialogs have accessible names, keyboard focus remains visible and is restored after view changes, and tab-return refreshes avoid interrupting active controls.
 - A strict-CSP example exercises both templates without inline scripts or styles and requires Trusted Types for script sinks.

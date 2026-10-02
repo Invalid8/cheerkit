@@ -291,8 +291,23 @@ export class CheerkitSupportElement extends HTMLElement {
           this.#card(
             [
               h(
+                "h2",
+                {
+                  class: "title",
+                  part: "title",
+                  id: "ck-title",
+                  tabindex: "-1",
+                },
+                this.#config.title ??
+                  fill("Support {name}", { name: this.#name }),
+              ),
+              h(
                 "p",
-                { class: "description", role: "status" },
+                {
+                  class: "description",
+                  role: "status",
+                  "aria-live": "polite",
+                },
                 this.#text.loading,
               ),
             ],

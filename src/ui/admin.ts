@@ -287,7 +287,10 @@ export class CheerkitAdminElement extends HTMLElement {
     })();
     root.adoptedStyleSheets = [sheet];
     this.#site = h("div", { class: "site" });
-    this.#nav = h("nav", { class: "nav" });
+    this.#nav = h("nav", {
+      class: "nav",
+      "aria-label": this.#text.adminLabel,
+    });
     this.#navSelect = h("select", {
       class: "input nav-select",
     }) as HTMLSelectElement;
@@ -434,6 +437,7 @@ export class CheerkitAdminElement extends HTMLElement {
 
   #renderNav() {
     const summary = this.#summary;
+    this.#nav.setAttribute("aria-label", this.#text.adminLabel);
     const counts: Partial<Record<Screen, number>> = summary
       ? {
           notices: summary.events.review + summary.events.pending,
@@ -482,6 +486,13 @@ export class CheerkitAdminElement extends HTMLElement {
     void this.#render(true).then(() =>
       this.#main.querySelector<HTMLElement>(".page-title")?.focus(),
     );
+  }
+
+  #renderAfterAction() {
+    void this.#render(false).then(() => {
+      if (this.#drawer.open || this.#modal.open) return;
+      this.#main.querySelector<HTMLElement>(".page-title")?.focus();
+    });
   }
 
   #errorText(error: unknown) {
@@ -744,7 +755,7 @@ export class CheerkitAdminElement extends HTMLElement {
       (value) => {
         this.#status = value;
         this.#cursors = [null];
-        void this.#render(false);
+        this.#renderAfterAction();
       },
     );
     let body: HTMLElement;
@@ -759,7 +770,7 @@ export class CheerkitAdminElement extends HTMLElement {
               text.showAll,
               () => {
                 this.#status = "";
-                void this.#render(false);
+                this.#renderAfterAction();
               },
             ],
           )
@@ -858,13 +869,13 @@ export class CheerkitAdminElement extends HTMLElement {
     older.disabled = page.length < pageSize;
     newer.addEventListener("click", () => {
       this.#cursors.pop();
-      void this.#render(false);
+      this.#renderAfterAction();
     });
     older.addEventListener("click", () => {
       const last = page.at(-1)?.intent;
       if (!last) return;
       this.#cursors.push({ createdAt: last.createdAt, id: last.id });
-      void this.#render(false);
+      this.#renderAfterAction();
     });
     return [
       this.#head(text.navContributions, text.contributionsSub),
@@ -903,6 +914,15 @@ export class CheerkitAdminElement extends HTMLElement {
         h(
           "div",
           { class: "drawer-body" },
+          h(
+            "h2",
+            {
+              class: "drawer-title",
+              id: "ck-drawer-title",
+              tabindex: "-1",
+            },
+            this.#text.errorTitle,
+          ),
           this.#banner(
             "danger",
             "alert",
@@ -912,10 +932,7 @@ export class CheerkitAdminElement extends HTMLElement {
         ),
       );
       if (!this.#drawer.open) this.#drawer.showModal();
-      this.#drawer
-        .querySelector<HTMLElement>(".drawer-body")
-        ?.setAttribute("tabindex", "-1");
-      this.#drawer.querySelector<HTMLElement>(".drawer-body")?.focus();
+      this.#drawer.querySelector<HTMLElement>(".drawer-title")?.focus();
     }
   }
 
@@ -1624,7 +1641,7 @@ export class CheerkitAdminElement extends HTMLElement {
         );
         button.addEventListener("click", () => {
           this.#contextId = context.id;
-          void this.#render(false);
+          this.#renderAfterAction();
         });
         return button;
       }),
@@ -1868,7 +1885,7 @@ export class CheerkitAdminElement extends HTMLElement {
       this.#effectState,
       (value) => {
         this.#effectState = value;
-        void this.#render(false);
+        this.#renderAfterAction();
       },
     );
     const body = effects.length
