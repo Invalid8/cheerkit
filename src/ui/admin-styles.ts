@@ -45,7 +45,7 @@ export const adminStyles = `${supportStyles}
 .main { display: grid; align-content: start; gap: 24px; padding: 32px 40px; min-width: 0; }
 .page-head { display: grid; gap: 4px; }
 .page-title { margin: 0; font-size: 1.75em; letter-spacing: -0.02em; line-height: 1.2; }
-.page-title:focus, .drawer-title:focus { outline: 2px solid var(--ck-color-primary); outline-offset: 4px; border-radius: 2px; }
+.page-title:focus-visible, .drawer-title:focus-visible { outline: 2px solid var(--ck-color-primary); outline-offset: 3px; border-radius: 2px; }
 .page-sub { font-size: 0.875em; color: var(--ck-color-text-muted); max-width: 70ch; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }

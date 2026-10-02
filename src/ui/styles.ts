@@ -125,7 +125,7 @@ dialog::backdrop { background: rgb(11 11 12 / 0.55); }
 
 .intro { display: grid; gap: 6px; }
 .title { margin: 0; font-size: 1.625em; line-height: 1.15; letter-spacing: -0.015em; font-weight: 700; }
-.title:focus { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 2px; }
+.title:focus-visible { outline: 2px solid var(--ck-color-primary); outline-offset: 3px; border-radius: 2px; }
 .description { margin: 0; font-size: 0.9375em; color: var(--ck-color-text-muted); }
 
 .group { display: grid; gap: 14px; border: 0; margin: 0; padding: 0; min-width: 0; }
