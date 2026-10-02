@@ -41,7 +41,7 @@ Cheerkit lets people support your work with a one-off payment, from inside the a
 
 ## Where it stands
 
-Version 0.1 is the first release. It is covered by automated tests on both SQLite and Postgres, and has taken real payments in Bachs's sandbox, including dollar checkouts paid in naira, provider replays, and recovery of payment details.
+Version 0.1 is in development. It is covered by automated tests on both SQLite and Postgres, and has taken real payments in Bachs's sandbox, including dollar checkouts paid in naira, provider replays, and recovery of payment details.
 
 **Supported today**
 
@@ -54,8 +54,8 @@ Version 0.1 is the first release. It is covered by automated tests on both SQLit
 **Known limits**
 
 - Rate limiting of contribution starts is per server process.
-- Payment records are kept until you remove them; there is no automatic expiry for them yet.
-- With Bachs, a payment settled in another currency does not report its settled amount through the API, so Cheerkit shows it as not reported.
+- Payment records do not expire by default. Hosts can set `paymentRecordYears` to purge eligible settled records while keeping replay and retry tombstones.
+- For an NGN checkout settled in USD, Bachs does not report the per-payment settled amount through its API or webhook, so Cheerkit shows it as not reported.
 
 ## Planned
 
@@ -66,4 +66,3 @@ In rough order; none of these is a promise of a date.
 - **Settled amounts per payment** wherever the provider exposes them.
 - **Refunds on payments collected in another currency**, confirmed against real provider behaviour.
 - **Shared rate limiting** across several server instances.
-- **Retention for payment records**, once the required periods are set per site.
