@@ -1,0 +1,77 @@
+{
+  "name": "cheerkit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Headless one-off support payments for applications you already run: your UI, your database, verified provider webhooks.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "./dist/ui/define.js"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "CHANGELOG.md",
+    "examples/core.mjs",
+    "examples/service.mjs",
+    "examples/http-node.mjs",
+    "examples/ui"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./bachs": {
+      "types": "./dist/bachs/index.d.ts",
+      "browser": null,
+      "import": "./dist/bachs/index.js"
+    },
+    "./sqlite": {
+      "types": "./dist/sqlite/index.d.ts",
+      "browser": null,
+      "import": "./dist/sqlite/index.js"
+    },
+    "./postgres": {
+      "types": "./dist/postgres/index.d.ts",
+      "browser": null,
+      "import": "./dist/postgres/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "browser": null,
+      "import": "./dist/server/index.js"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js"
+    },
+    "./ui/define": {
+      "types": "./dist/ui/define.d.ts",
+      "import": "./dist/ui/define.js"
+    }
+  },
+  "scripts": {
+    "clean": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run clean && tsc",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "check": "npm run format:check && npm run typecheck && npm test",
+    "prepack": "npm run check",
+    "dev": "npm run build && node examples/ui/dev-server.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "@types/pg": "8.23.1",
+    "pg": "8.23.0",
+    "prettier": "3.9.9",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Support my work</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <h1>Support my work</h1>
+      <p>
+        Describe what supporters are appreciating here. This page is yours to
+        change.
+      </p>
+      <form id="support" novalidate>
+        <fieldset>
+          <legend>Choose an amount</legend>
+          <div class="presets" data-presets></div>
+        </fieldset>
+        <div class="field">
+          <label for="custom">Or enter your own amount</label>
+          <input
+            id="custom"
+            name="custom"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            aria-describedby="range"
+          />
+          <p id="range" class="hint" data-range></p>
+        </div>
+        <div class="field" data-field="currency">
+          <label for="currency">Currency</label>
+          <select id="currency" name="currency"></select>
+        </div>
+        <div class="field" data-field="supporterName">
+          <label for="supporterName"
+            >Name to show the owner
+            <span class="optional">(optional)</span></label
+          >
+          <input
+            id="supporterName"
+            name="supporterName"
+            maxlength="120"
+            autocomplete="name"
+          />
+        </div>
+        <div class="field" data-field="message">
+          <label for="message"
+            >Private message <span class="optional">(optional)</span></label
+          >
+          <textarea
+            id="message"
+            name="message"
+            maxlength="2000"
+            rows="3"
+          ></textarea>
+        </div>
+        <p class="hint" data-fee-note></p>
+        <p class="hint">
+          Payment is handled by Bachs. Checkout may ask for your email; that is
+          separate from the name above.
+        </p>
+        <p class="status" role="status" data-status></p>
+        <button type="submit">Continue to payment</button>
+      </form>
+    </main>
+    <script type="module">
+      import { mountSupportForm } from "./support-form.js";
+      mountSupportForm(document.getElementById("support"), {
+        api: "/api/support",
+        contextId: document.body.dataset.context ?? "my-work",
+        metadata: { entry_point: "page" },
+        onCheckout: (url) => location.assign(url),
+        onPending: () => location.assign("result.html"),
+      });
+    </script>
+  </body>
+</html>

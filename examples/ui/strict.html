@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/strict.css" />
+    <title>Cheerkit strict security example</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Strict browser security</p>
+        <h1>Support and owner templates</h1>
+        <p class="intro">
+          This page uses an enforcing Content Security Policy with no inline
+          scripts, no inline styles, and Trusted Types required for script
+          sinks.
+        </p>
+      </div>
+      <a href="/dev/owner-login?next=/strict.html">Sign in to the demo admin</a>
+    </header>
+
+    <main>
+      <section aria-labelledby="support-heading">
+        <h2 id="support-heading">Support form</h2>
+        <cheerkit-support
+          api="/api/support"
+          context="my-work"
+          layout="inline"
+        ></cheerkit-support>
+      </section>
+
+      <section aria-labelledby="admin-heading">
+        <h2 id="admin-heading">Owner admin</h2>
+        <cheerkit-admin api="/api/support">
+          <a slot="sign-in" href="/dev/owner-login?next=/strict.html">
+            Sign in to view the demo admin
+          </a>
+        </cheerkit-admin>
+      </section>
+    </main>
+
+    <script type="module" src="/strict.js"></script>
+  </body>
+</html>

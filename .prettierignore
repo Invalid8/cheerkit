@@ -1,0 +1,5 @@
+dist
+coverage
+design
+package-lock.json
+*.tgz

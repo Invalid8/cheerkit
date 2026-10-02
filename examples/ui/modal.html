@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Project with a support button</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <h1>Any page of your site</h1>
+      <p>
+        The same support form opens in a dialog from a button anywhere on the
+        site.
+      </p>
+      <button type="button" id="open-support" aria-haspopup="dialog">
+        Support this work
+      </button>
+    </main>
+    <dialog id="support-dialog" aria-labelledby="support-title">
+      <form id="support" novalidate>
+        <div class="dialog-header">
+          <h2 id="support-title">Support this work</h2>
+          <button type="button" class="close" data-close aria-label="Close">
+            ×
+          </button>
+        </div>
+        <fieldset>
+          <legend>Choose an amount</legend>
+          <div class="presets" data-presets></div>
+        </fieldset>
+        <div class="field">
+          <label for="custom">Or enter your own amount</label>
+          <input
+            id="custom"
+            name="custom"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            aria-describedby="range"
+          />
+          <p id="range" class="hint" data-range></p>
+        </div>
+        <div class="field" data-field="currency">
+          <label for="currency">Currency</label>
+          <select id="currency" name="currency"></select>
+        </div>
+        <div class="field" data-field="supporterName">
+          <label for="supporterName"
+            >Name to show the owner
+            <span class="optional">(optional)</span></label
+          >
+          <input
+            id="supporterName"
+            name="supporterName"
+            maxlength="120"
+            autocomplete="name"
+          />
+        </div>
+        <div class="field" data-field="message">
+          <label for="message"
+            >Private message <span class="optional">(optional)</span></label
+          >
+          <textarea
+            id="message"
+            name="message"
+            maxlength="2000"
+            rows="3"
+          ></textarea>
+        </div>
+        <p class="hint" data-fee-note></p>
+        <p class="hint">
+          Payment is handled by Bachs. Checkout may ask for your email; that is
+          separate from the name above.
+        </p>
+        <p class="status" role="status" data-status></p>
+        <button type="submit">Continue to payment</button>
+      </form>
+    </dialog>
+    <script type="module">
+      import { mountSupportForm } from "./support-form.js";
+      const dialog = document.getElementById("support-dialog");
+      const opener = document.getElementById("open-support");
+      opener.addEventListener("click", () => dialog.showModal());
+      dialog
+        .querySelector("[data-close]")
+        .addEventListener("click", () => dialog.close());
+      dialog.addEventListener("close", () => opener.focus());
+      mountSupportForm(document.getElementById("support"), {
+        api: "/api/support",
+        contextId: document.body.dataset.context ?? "my-work",
+        metadata: { entry_point: "modal" },
+        // Close this dialog before handing over, so a provider overlay never stacks on top of it.
+        onCheckout: (url) => {
+          dialog.close();
+          location.assign(url);
+        },
+        onPending: () => {
+          dialog.close();
+          location.assign("result.html");
+        },
+      });
+    </script>
+  </body>
+</html>

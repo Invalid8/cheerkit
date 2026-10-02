@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Your support</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page" aria-labelledby="result-title">
+      <h1 id="result-title" tabindex="-1">Checking your payment…</h1>
+      <div role="status" aria-live="polite" data-result>
+        <p>This usually takes a few seconds.</p>
+      </div>
+      <p class="actions" data-actions></p>
+    </main>
+    <script type="module">
+      import {
+        describeError,
+        forgetSubmission,
+        formatAmount,
+        getStatus,
+        hasSubmission,
+        removeOwnData,
+        resumeContribution,
+        savedAccess,
+      } from "./support.js";
+      const api = "/api/support";
+      const title = document.getElementById("result-title");
+      const result = document.querySelector("[data-result]");
+      const actions = document.querySelector("[data-actions]");
+      const paragraph = (text) =>
+        Object.assign(document.createElement("p"), { textContent: text });
+      const button = (text, onClick) => {
+        const element = Object.assign(document.createElement("button"), {
+          type: "button",
+          textContent: text,
+        });
+        element.addEventListener("click", onClick);
+        return element;
+      };
+      const link = (text, href) =>
+        Object.assign(document.createElement("a"), { textContent: text, href });
+
+      const show = (heading, lines, controls = []) => {
+        const changed = title.textContent !== heading;
+        title.textContent = heading;
+        result.replaceChildren(...lines.map(paragraph));
+        actions.replaceChildren(...controls);
+        if (changed) title.focus();
+      };
+
+      async function tryAgain() {
+        if (!hasSubmission()) {
+          location.assign("page.html");
+          return;
+        }
+        show("Starting a new checkout…", []);
+        try {
+          const access = await resumeContribution(api);
+          if (access.contribution.checkoutUrl)
+            location.assign(access.contribution.checkoutUrl);
+          else check();
+        } catch (error) {
+          show(
+            "We could not start a new checkout",
+            [describeError(error)],
+            [button("Try again", tryAgain)],
+          );
+        }
+      }
+
+      async function removeMine() {
+        try {
+          await removeOwnData(api, savedAccess());
+          actions.replaceChildren(
+            paragraph(
+              "Your name and message have been removed. The payment record stays, without them.",
+            ),
+          );
+        } catch (error) {
+          actions.replaceChildren(
+            paragraph(describeError(error)),
+            button("Remove my name and message", removeMine),
+          );
+        }
+      }
+      const removal = () => button("Remove my name and message", removeMine);
+
+      let delay = 2000;
+      let waited = 0;
+      async function check() {
+        const access = savedAccess();
+        if (!access) {
+          show(
+            "No contribution to show",
+            [
+              "This browser tab has no record of a recent contribution. If you paid, the owner still receives it.",
+            ],
+            [link("Back to the support page", "page.html")],
+          );
+          return;
+        }
+        let contribution;
+        try {
+          contribution = await getStatus(api, access);
+        } catch (error) {
+          const expired = error.code === "not_found";
+          show(
+            expired
+              ? "This result link has expired"
+              : "We could not check right now",
+            [
+              expired
+                ? "If you paid, the owner still receives your support."
+                : describeError(error),
+            ],
+            expired ? [] : [button("Check again", check)],
+          );
+          return;
+        }
+        const amount = formatAmount(contribution.amount, contribution.currency);
+        switch (contribution.outcome) {
+          case "confirmed":
+            forgetSubmission();
+            show(
+              "Thank you!",
+              [`Your support of ${amount} is confirmed.`],
+              [removal()],
+            );
+            return;
+          case "refunded":
+            show("This contribution was refunded", [
+              `${amount} was returned through the payment provider.`,
+            ]);
+            return;
+          case "needs_review":
+            show("Your payment needs a quick check", [
+              "The payment we received does not exactly match what was expected. The owner will look at it; you do not need to pay again.",
+              "If you have questions, contact the site owner and mention the time you paid.",
+            ]);
+            return;
+          case "unsuccessful":
+            show(
+              "The payment did not go through",
+              [
+                "Nothing was collected for this attempt. You can try again with the same choices.",
+              ],
+              [button("Try again", tryAgain)],
+            );
+            return;
+        }
+        const controls = contribution.checkoutUrl
+          ? [link("Continue to payment", contribution.checkoutUrl)]
+          : [];
+        if (waited >= 120000) {
+          show(
+            "Still waiting for confirmation",
+            [
+              `We have not received confirmation of ${amount} yet. Bank transfers can take longer. You can close this page: if the payment completes, it is recorded.`,
+              "Please do not pay again unless this page says the payment did not go through.",
+            ],
+            [
+              ...controls,
+              button("Check again", () => {
+                waited = 0;
+                delay = 2000;
+                check();
+              }),
+            ],
+          );
+          return;
+        }
+        show(
+          "Waiting for confirmation",
+          [
+            `We are waiting for the payment provider to confirm ${amount}. Please do not pay again.`,
+          ],
+          controls,
+        );
+        setTimeout(check, delay);
+        waited += delay;
+        delay = Math.min(delay * 1.5, 15000);
+      }
+      check();
+    </script>
+  </body>
+</html>

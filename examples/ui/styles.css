@@ -1,0 +1,266 @@
+:root {
+  --text: #1d1d1f;
+  --muted: #5b5b61;
+  --surface: #ffffff;
+  --background: #f5f4f0;
+  --border: #c9c7c0;
+  --accent: #1f5f4a;
+  --accent-text: #ffffff;
+  --error: #9b1c1c;
+  --focus: #1a56db;
+  color-scheme: light dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f2f2f2;
+    --muted: #b7b7bd;
+    --surface: #1f1f22;
+    --background: #121214;
+    --border: #4a4a50;
+    --accent: #7fd1b2;
+    --accent-text: #0f1f19;
+    --error: #ff9b9b;
+    --focus: #8ab4ff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+}
+.page {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+.page.wide {
+  max-width: 64rem;
+}
+h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+form {
+  display: grid;
+  gap: 1rem;
+}
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+legend,
+label {
+  font-weight: 600;
+}
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.presets label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 500;
+  cursor: pointer;
+}
+.presets label:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  width: 100%;
+}
+button,
+.actions a {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.hint,
+.optional {
+  color: var(--muted);
+  font-weight: 400;
+  margin: 0;
+}
+.status:empty {
+  display: none;
+}
+.status[data-tone="error"] {
+  color: var(--error);
+  font-weight: 600;
+}
+.status[data-tone="error"]::before {
+  content: "Error: ";
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+dialog {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  background: var(--surface);
+  color: var(--text);
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.dialog-header h2 {
+  margin: 0;
+}
+.close {
+  background: transparent;
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem 0.6rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+th,
+td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+section {
+  margin-top: 2rem;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+.filters select {
+  width: auto;
+}
+.summary,
+.contexts {
+  display: grid;
+  gap: 0.5rem;
+  padding-left: 1.25rem;
+}
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+}
+dt {
+  font-weight: 600;
+}
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+form.inline {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+  max-width: 28rem;
+}
+.form-title {
+  font-weight: 600;
+  margin: 0;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 40rem) {
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+  }
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  tr {
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0;
+  }
+  td {
+    border: 0;
+    padding: 0.15rem 0.5rem;
+  }
+  dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pager {
+  display: flex;
+  gap: 0.5rem;
+}

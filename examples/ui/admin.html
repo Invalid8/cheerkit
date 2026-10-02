@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Support admin</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <cheerkit-admin api="/api/support">
+      <a slot="sign-in" href="/dev/owner-login?next=/admin.html">Sign in</a>
+    </cheerkit-admin>
+    <script type="module">
+      import "/ui/define.js";
+      document.querySelector("cheerkit-admin").config = {
+        siteName: "Field Notes",
+      };
+    </script>
+  </body>
+</html>

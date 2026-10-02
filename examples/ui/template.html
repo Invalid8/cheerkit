@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Support template</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 28px 16px 48px;
+        font-family: system-ui, sans-serif;
+        background: #f3f0e8;
+        color: #1f1e1b;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        max-width: 960px;
+        margin: 0 auto 40px;
+      }
+      nav div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      button {
+        font: inherit;
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1px solid #ddd7ca;
+        background: #fbfaf6;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>Field Notes</strong>
+      <div>
+        <button type="button" data-color="">Default colour</button>
+        <button type="button" data-color="#2f6b3f">Green</button>
+        <button type="button" data-color="#FFD60A">Yellow</button>
+        <button type="button" data-cheerkit-open="my-work">
+          Buy me a coffee
+        </button>
+      </div>
+    </nav>
+
+    <cheerkit-support
+      api="/api/support"
+      context="my-work"
+      layout="page"
+    ></cheerkit-support>
+    <cheerkit-support
+      api="/api/support"
+      context="my-work"
+      layout="dialog"
+    ></cheerkit-support>
+
+    <script type="module">
+      import "/ui/define.js";
+      const config = {
+        name: "Kemi Lawal",
+        tagline: "Writes Field Notes, a weekly letter on Lagos buildings",
+        title: "Buy Kemi a coffee",
+        description:
+          "Field Notes is free to read. If a letter helped you, a coffee keeps the next one coming.",
+        amountNotes: ["1 coffee", "2 coffees", "5 coffees"],
+        text: { messagePlaceholder: "Say something to Kemi" },
+      };
+      const elements = document.querySelectorAll("cheerkit-support");
+      for (const element of elements) element.config = config;
+      for (const button of document.querySelectorAll("[data-color]"))
+        button.addEventListener("click", () => {
+          for (const element of elements)
+            if (button.dataset.color)
+              element.setAttribute("color", button.dataset.color);
+            else element.removeAttribute("color");
+        });
+    </script>
+  </body>
+</html>

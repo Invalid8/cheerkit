@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Support history</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page wide">
+      <h1>Support history</h1>
+      <p>
+        <a href="/api/support/owner/export" download>Download all records</a>
+      </p>
+      <p class="status" role="status" data-status></p>
+
+      <section aria-labelledby="attention-title">
+        <h2 id="attention-title">Needs attention</h2>
+        <ul class="summary" data-summary></ul>
+      </section>
+
+      <section aria-labelledby="contexts-title">
+        <h2 id="contexts-title">What people can support</h2>
+        <ul class="contexts" data-contexts></ul>
+      </section>
+
+      <section aria-labelledby="history-title">
+        <h2 id="history-title">Contributions</h2>
+        <div class="filters">
+          <label for="filter-context">Context</label>
+          <select id="filter-context">
+            <option value="">All</option>
+          </select>
+          <label for="filter-status">Status</label>
+          <select id="filter-status">
+            <option value="">All</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="needs_review">Needs review</option>
+            <option value="awaiting_payment">Waiting for payment</option>
+            <option value="checkout_unresolved">Checkout not confirmed</option>
+            <option value="unsuccessful">Not completed</option>
+          </select>
+        </div>
+        <table>
+          <caption class="visually-hidden">
+            Newest contributions first
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Started</th>
+              <th scope="col">Context</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="visually-hidden">Details</span></th>
+            </tr>
+          </thead>
+          <tbody data-rows></tbody>
+        </table>
+        <p class="pager">
+          <button type="button" data-newer>Newer</button>
+          <button type="button" data-older>Older</button>
+        </p>
+      </section>
+
+      <section aria-labelledby="detail-title" data-detail hidden>
+        <h2 id="detail-title" tabindex="-1">Contribution</h2>
+        <dl data-facts></dl>
+        <p class="status" role="status" data-detail-status></p>
+        <div data-actions></div>
+      </section>
+
+      <section aria-labelledby="events-title">
+        <h2 id="events-title">Unresolved provider events</h2>
+        <p class="hint">
+          Events wait here until they match a contribution. Dismiss activity
+          that belongs to another site.
+        </p>
+        <ul data-events></ul>
+      </section>
+    </main>
+    <script type="module" src="owner.js"></script>
+  </body>
+</html>
