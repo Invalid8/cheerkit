@@ -218,7 +218,7 @@ for (const dialect of dialects()) {
     await assert.rejects(testStore(host, connection, { environment: "live" }), {
       code: "CONFLICT",
     });
-    for (const version of [1, 3]) {
+    for (const version of [1, 2]) {
       await connection.database.query("UPDATE cheerkit_meta SET version = ?", [
         version,
       ]);
@@ -498,6 +498,82 @@ for (const dialect of dialects()) {
         "2026-09-24T12:00:00.000Z",
       ),
       { code: "NOT_FOUND" },
+    );
+  });
+
+  it("purges old financial records while retaining hashed submission and webhook deduplication", async (t) => {
+    const f = await fixture(t, dialect);
+    await ready(f.store, "c1", "submission-1");
+    const collected = await event("evt_1");
+    await f.store.acceptEvent(collected);
+    await f.store.processEvent("evt_1");
+    const unassociated = await event("evt_orphan");
+    assert.equal(await f.store.acceptEvent(unassociated), "accepted");
+    assert.equal(
+      await f.store.applyRetention(
+        "2026-01-01T00:00:00.000Z",
+        "2033-01-01T00:00:00.000Z",
+        "2032-01-01T00:00:00.000Z",
+      ),
+      0,
+      "an unassociated old webhook for the charge holds the record for reconciliation",
+    );
+    assert.ok(await f.store.getContribution("c1"));
+    await f.store.processEvent("evt_orphan");
+
+    assert.equal(
+      await f.store.applyRetention(
+        "2026-01-01T00:00:00.000Z",
+        "2033-01-01T00:00:00.000Z",
+        "2032-01-01T00:00:00.000Z",
+      ),
+      1,
+    );
+    assert.equal(await f.store.getContribution("c1"), null);
+    for (const table of [
+      "contributions",
+      "attempts",
+      "events",
+      "event_conflicts",
+      "payments",
+      "payment_statements",
+      "refunds",
+      "disputes",
+      "owner_records",
+      "effects",
+    ])
+      assert.equal(
+        (await rows(f.store, `SELECT * FROM cheerkit_${table}`)).length,
+        0,
+        `${table} should be purged`,
+      );
+
+    const tombstones = JSON.stringify([
+      await rows(f.store, "SELECT * FROM cheerkit_retired_submissions"),
+      await rows(f.store, "SELECT * FROM cheerkit_retired_identifiers"),
+      await rows(f.store, "SELECT * FROM cheerkit_retired_events"),
+    ]);
+    for (const privateValue of [
+      "submission-1",
+      "attempt-c1",
+      "chk-c1",
+      "ch_1",
+      "Private note",
+    ])
+      assert.equal(tombstones.includes(privateValue), false);
+
+    await assert.rejects(reserve(f.store, "c2", "submission-1"), {
+      code: "CONFLICT",
+    });
+    assert.equal(await f.store.acceptEvent(collected), "retired");
+    assert.equal(
+      await f.store.acceptEvent(await event("evt_new")),
+      "retired",
+      "new event IDs tied to a retired charge must not recreate payment records",
+    );
+    assert.equal(
+      (await rows(f.store, "SELECT * FROM cheerkit_events")).length,
+      0,
     );
   });
 

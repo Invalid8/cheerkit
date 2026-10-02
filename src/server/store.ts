@@ -266,7 +266,7 @@ export interface CheerkitStore {
   /** Stores only the fields needed for payment facts; payer identity in the delivery is never written. */
   acceptEvent(
     event: BachsEvent,
-  ): Promise<"accepted" | "duplicate" | "conflict">;
+  ): Promise<"accepted" | "duplicate" | "conflict" | "retired">;
   processEvent(eventId: string): Promise<StoredEvent>;
   /**
    * Keeps Bachs's current record of a recorded charge, replacing an earlier one. Refused unless it came from the client's own
@@ -303,7 +303,11 @@ export interface CheerkitStore {
     at: string,
   ): Promise<StoredContribution>;
   /** Removes supporter name, message, and metadata from settled contributions created before `before`. */
-  applyRetention(before: string, at: string): Promise<number>;
+  applyRetention(
+    before: string,
+    at: string,
+    recordsBefore?: string,
+  ): Promise<number>;
   /** Claims one due effect (pending and due, or running with an expired lease) and counts the attempt. */
   claimEffect(now: number, leaseUntil: number): Promise<EffectClaim | null>;
   /** Records an attempt's result; ignored if a newer attempt has claimed the effect since. */

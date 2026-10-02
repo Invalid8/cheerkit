@@ -86,12 +86,13 @@ Server only.
 
 ### Migrations
 
-`cheerkitMigrations({ prefix? })` returns `[{ version, sql }]` in order, for your migration tool. `CHEERKIT_SCHEMA_VERSION` is the version this release expects (2).
+`cheerkitMigrations({ prefix? })` returns `[{ version, sql }]` in order, for your migration tool. `CHEERKIT_SCHEMA_VERSION` is the version this release expects (3).
 
 | Version | Adds                                                                                           |
 | ------- | ---------------------------------------------------------------------------------------------- |
 | 1       | Contexts, contributions, attempts, events, payments, refunds, disputes, owner records, effects |
 | 2       | `payment_statements`: Bachs's payment records retrieved by the owner                           |
+| 3       | Hashed tombstones used when optional payment-record retention deletes old contributions        |
 
 ### Store
 
@@ -110,15 +111,15 @@ Store methods are trusted operations with no authorization of their own; reach t
 
 `createSupportService(options)`:
 
-| Option                          | Meaning                                                                                 |
-| ------------------------------- | --------------------------------------------------------------------------------------- |
-| `store`, `checkout`, `webhooks` | Must share one organization and environment                                             |
-| `resultSecret`                  | 32+ random characters; signs result tokens                                              |
-| `retention`                     | `{ supporterDataDays }` (1–3650), required                                              |
-| `resultLifetimeSeconds`         | Result token lifetime, default 30 days                                                  |
-| `authorizeOwner`                | `(request) => boolean \| Promise<boolean>`; without it every owner operation is refused |
-| `effects`                       | `{ handlers, maxAttempts, retryDelayMs, leaseMs }`, one handler per store effect name   |
-| `now`                           | Clock, for tests                                                                        |
+| Option                          | Meaning                                                                                                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `store`, `checkout`, `webhooks` | Must share one organization and environment                                                                                                                     |
+| `resultSecret`                  | 32+ random characters; signs result tokens                                                                                                                      |
+| `retention`                     | `{ supporterDataDays }` (1–3650), required; optional `paymentRecordYears` (1–50) deletes settled financial records while keeping hashed retry/replay tombstones |
+| `resultLifetimeSeconds`         | Result token lifetime, default 30 days                                                                                                                          |
+| `authorizeOwner`                | `(request) => boolean \| Promise<boolean>`; without it every owner operation is refused                                                                         |
+| `effects`                       | `{ handlers, maxAttempts, retryDelayMs, leaseMs }`, one handler per store effect name                                                                           |
+| `now`                           | Clock, for tests                                                                                                                                                |
 
 | Method                                                                              | Does                                                                                                |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |

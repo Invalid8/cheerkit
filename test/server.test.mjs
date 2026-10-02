@@ -604,12 +604,61 @@ test("invalid configuration fails before any reservation or provider request", a
     { retention: undefined },
     { retention: { supporterDataDays: 0 } },
     { retention: { supporterDataDays: 1.5 } },
+    { retention: { supporterDataDays: 30, paymentRecordYears: 0 } },
+    { retention: { supporterDataDays: 30, paymentRecordYears: 1.5 } },
   ])
     assert.throws(() => f.service(overrides), {
       code: "INVALID_CONFIGURATION",
     });
   assert.equal(f.calls, 0);
   assert.deepEqual(await f.store.listContributions(), []);
+});
+
+test("six-year payment retention expires detailed records but keeps replay and retry protection", async (t) => {
+  const f = await fixture(t);
+  const key = randomUUID();
+  const service = f.service({
+    retention: { supporterDataDays: 30, paymentRecordYears: 6 },
+  });
+  const access = await service.startContribution("work", submission, key);
+  const stored = await f.store.getBySubmissionKey(key);
+  const signed = delivery(stored);
+  await service.acceptWebhook(...signed);
+
+  f.setTime(Date.parse("2032-09-24T12:00:00.000Z"));
+  assert.equal(
+    await service.applyRetention(),
+    1,
+    "supporter data is removed at its own shorter deadline",
+  );
+  assert.ok(
+    await f.store.getContribution(access.contribution.contributionId),
+    "financial records remain through the six-year boundary",
+  );
+  f.setTime(Date.parse("2032-09-24T12:00:00.001Z"));
+  assert.equal(await service.applyRetention(), 1);
+  assert.equal(
+    await f.store.getContribution(access.contribution.contributionId),
+    null,
+  );
+  await assert.rejects(service.startContribution("work", submission, key), {
+    code: "CONFLICT",
+  });
+  const [retiredBody] = signed;
+  const timestamp = Math.floor(Date.parse("2032-09-24T12:00:00.001Z") / 1000);
+  const retiredSignature = createHmac("sha256", "fixture-webhook")
+    .update(`${timestamp}.`)
+    .update(retiredBody)
+    .digest("hex");
+  assert.deepEqual(
+    await service.acceptWebhook(retiredBody, {
+      signatureV2: `t=${timestamp},v1=${retiredSignature}`,
+    }),
+    {
+      receipt: "retired",
+      processing: "expired",
+    },
+  );
 });
 
 test("custom result lifetime and malformed initiation requests", async (t) => {

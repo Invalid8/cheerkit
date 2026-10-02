@@ -134,6 +134,8 @@ export interface OwnContributionData {
 export interface RetentionOptions {
   /** Days after which a settled contribution's name, message, and metadata are removed (1–3650). */
   readonly supporterDataDays: number;
+  /** Calendar years after which settled financial records are deleted. Dedupe tombstones remain. Omit to retain records indefinitely. */
+  readonly paymentRecordYears?: number;
 }
 
 export interface SupportServiceOptions {
@@ -178,8 +180,8 @@ export interface SupportService {
     rawBody: Uint8Array,
     headers: BachsSignatureHeaders,
   ): Promise<{
-    receipt: "accepted" | "duplicate" | "conflict";
-    processing: StoredEvent["state"];
+    receipt: "accepted" | "duplicate" | "conflict" | "retired";
+    processing: StoredEvent["state"] | "expired";
   }>;
   processPending(options?: {
     afterId?: string;
@@ -209,6 +211,19 @@ function fullyRefunded(stored: StoredContribution): boolean {
           ) === amountUnits(payment.amount),
     )
   );
+}
+
+function subtractUtcYears(date: Date, years: number): Date {
+  const result = new Date(date);
+  const month = result.getUTCMonth();
+  const day = result.getUTCDate();
+  result.setUTCDate(1);
+  result.setUTCFullYear(result.getUTCFullYear() - years);
+  const lastDay = new Date(
+    Date.UTC(result.getUTCFullYear(), month + 1, 0),
+  ).getUTCDate();
+  result.setUTCMonth(month, Math.min(day, lastDay));
+  return result;
 }
 
 function publicStatus(
@@ -311,6 +326,7 @@ export function createSupportService(
     );
   }
   const retentionDays = options.retention?.supporterDataDays;
+  const paymentRecordYears = options.retention?.paymentRecordYears;
   if (
     typeof retentionDays !== "number" ||
     !Number.isSafeInteger(retentionDays) ||
@@ -320,6 +336,17 @@ export function createSupportService(
     throw new SupportServiceError(
       "INVALID_CONFIGURATION",
       "Set retention.supporterDataDays to a whole number of days from 1 to 3650.",
+    );
+  }
+  if (
+    paymentRecordYears !== undefined &&
+    (!Number.isSafeInteger(paymentRecordYears) ||
+      paymentRecordYears < 1 ||
+      paymentRecordYears > 50)
+  ) {
+    throw new SupportServiceError(
+      "INVALID_CONFIGURATION",
+      "Set retention.paymentRecordYears to a whole number from 1 to 50.",
     );
   }
   const now = options.now ?? Date.now;
@@ -545,14 +572,21 @@ export function createSupportService(
     async acceptWebhook(rawBody: Uint8Array, headers: BachsSignatureHeaders) {
       const event = await webhooks.verify(rawBody, headers);
       const receipt = await store.acceptEvent(event);
+      if (receipt === "retired")
+        return Object.freeze({ receipt, processing: "expired" as const });
       const result = await store.processEvent(event.id);
       return Object.freeze({ receipt, processing: result.state });
     },
     applyRetention(): Promise<number> {
-      return store.applyRetention(
-        new Date(clock() - retentionDays * 86_400_000).toISOString(),
-        nowIso(),
-      );
+      const now = new Date(clock());
+      const personalBefore = new Date(
+        now.getTime() - retentionDays * 86_400_000,
+      ).toISOString();
+      const recordsBefore =
+        paymentRecordYears === undefined
+          ? undefined
+          : subtractUtcYears(now, paymentRecordYears).toISOString();
+      return store.applyRetention(personalBefore, nowIso(), recordsBefore);
     },
     async runEffects({ limit }: { limit: number }) {
       if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100)

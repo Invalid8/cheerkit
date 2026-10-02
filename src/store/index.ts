@@ -312,6 +312,18 @@ export async function openStore(options: StoreOptions): Promise<CheerkitStore> {
     sql: string,
     params: readonly unknown[] = [],
   ): Promise<Row | undefined> => (await tx.query(sql, params))[0];
+  const retiredIdentityExists = async (
+    tx: SqlExecutor,
+    kind: "reference" | "checkout" | "charge",
+    value: string,
+  ) =>
+    Boolean(
+      await one(
+        tx,
+        `SELECT 1 FROM ${p}retired_identifiers WHERE kind = ? AND identifier_hash = ?`,
+        [kind, hash(`${kind}:${value}`)],
+      ),
+    );
 
   await transaction(async (tx) => {
     let meta: Row | undefined;
@@ -1288,6 +1300,14 @@ export async function openStore(options: StoreOptions): Promise<CheerkitStore> {
           if (existing.fingerprint !== fingerprint) conflict();
           return snapshot(tx, await requiredRow(tx, String(existing.id)));
         }
+        if (
+          await one(
+            tx,
+            `SELECT 1 FROM ${p}retired_submissions WHERE submission_hash = ?`,
+            [hash(`submission:${key}`)],
+          )
+        )
+          conflict();
         const context = await checkCurrentRules(tx, valid);
         if (
           await one(tx, `SELECT 1 FROM ${p}contributions WHERE id = ?`, [
@@ -1553,7 +1573,7 @@ export async function openStore(options: StoreOptions): Promise<CheerkitStore> {
     },
     async acceptEvent(
       event: BachsEvent,
-    ): Promise<"accepted" | "duplicate" | "conflict"> {
+    ): Promise<"accepted" | "duplicate" | "conflict" | "retired"> {
       if (!isAuthenticated(event))
         throw new BachsError(
           "INVALID_SIGNATURE",
@@ -1595,6 +1615,38 @@ export async function openStore(options: StoreOptions): Promise<CheerkitStore> {
             );
           }
           return "conflict";
+        }
+        const eventHash = hash(`event:${event.id}`);
+        const retired = await one(
+          tx,
+          `SELECT fingerprint FROM ${p}retired_events WHERE event_hash = ?`,
+          [eventHash],
+        );
+        if (retired) {
+          if (retired.fingerprint !== fingerprint)
+            await tx.query(
+              `INSERT INTO ${p}retired_event_conflicts (event_hash, fingerprint) VALUES (?, ?) ON CONFLICT DO NOTHING`,
+              [eventHash, fingerprint],
+            );
+          return "retired";
+        }
+        const data = event.data;
+        const identities: ["reference" | "checkout" | "charge", unknown][] = [
+          ["reference", data.reference],
+          ["checkout", data.checkout_id],
+          ["charge", data.charge_id],
+        ];
+        for (const [kind, value] of identities) {
+          if (
+            typeof value === "string" &&
+            (await retiredIdentityExists(tx, kind, value))
+          ) {
+            await tx.query(
+              `INSERT INTO ${p}retired_events (event_hash, fingerprint, retired_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING`,
+              [eventHash, fingerprint, new Date().toISOString()],
+            );
+            return "retired";
+          }
         }
         await tx.query(
           `INSERT INTO ${p}events (id, payload, fingerprint, received_at) VALUES (?, ?, ?, ?)`,
@@ -1860,9 +1912,14 @@ export async function openStore(options: StoreOptions): Promise<CheerkitStore> {
         return snapshot(tx, await requiredRow(tx, id));
       });
     },
-    async applyRetention(before: string, at: string): Promise<number> {
+    async applyRetention(
+      before: string,
+      at: string,
+      recordsBefore?: string,
+    ): Promise<number> {
       const cutoff = time(before);
       const removedAt = time(at);
+      const recordCutoff = recordsBefore ? time(recordsBefore) : null;
       return transaction(async (tx) => {
         const rows = await tx.query(
           `SELECT c.id, c.outcome, a.state AS attempt_state, a.checkout FROM ${p}contributions c
@@ -1877,7 +1934,148 @@ export async function openStore(options: StoreOptions): Promise<CheerkitStore> {
         );
         for (const row of due)
           await removePersonal(tx, String(row.id), "retention", removedAt);
-        return due.length;
+        if (!recordCutoff) return due.length;
+
+        const candidates = await tx.query(
+          `SELECT c.id, c.submission_key FROM ${p}contributions c
+          JOIN ${p}attempts a ON a.contribution_id = c.id AND ${currentAttempt}
+          WHERE c.created_at < ?
+          AND NOT EXISTS (SELECT 1 FROM ${p}events e WHERE e.contribution_id = c.id AND e.state IN ('pending', 'review'))
+          AND NOT EXISTS (SELECT 1 FROM ${p}payments pay JOIN ${p}refunds r ON r.charge_id = pay.charge_id WHERE pay.contribution_id = c.id AND r.status = 'processing')
+          AND NOT EXISTS (SELECT 1 FROM ${p}payments pay JOIN ${p}disputes d ON d.charge_id = pay.charge_id WHERE pay.contribution_id = c.id AND d.status IN ('needs_response', 'under_review'))
+          AND NOT EXISTS (SELECT 1 FROM ${p}effects ef WHERE ef.contribution_id = c.id AND ef.state <> 'succeeded')`,
+          [recordCutoff],
+        );
+        const purge: Row[] = [];
+        const unassociatedEvents = (
+          await tx.query(
+            `SELECT payload FROM ${p}events WHERE contribution_id IS NULL AND state IN ('pending', 'review')`,
+          )
+        ).map((row) => decode<BachsEvent>(row.payload).data);
+        for (const candidate of candidates) {
+          const row = await requiredRow(tx, String(candidate.id));
+          if (
+            !["confirmed", "unsuccessful"].includes(
+              contributionStatus(row.outcome, row.attempt_state, row.checkout),
+            )
+          )
+            continue;
+          const attempts = await tx.query(
+            `SELECT reference, checkout_id FROM ${p}attempts WHERE contribution_id = ?`,
+            [candidate.id],
+          );
+          const payments = await tx.query(
+            `SELECT charge_id FROM ${p}payments WHERE contribution_id = ?`,
+            [candidate.id],
+          );
+          const referenced = unassociatedEvents.some(
+            (data) =>
+              attempts.some(
+                (attempt) =>
+                  (typeof data.reference === "string" &&
+                    data.reference === attempt.reference) ||
+                  (typeof data.checkout_id === "string" &&
+                    data.checkout_id === attempt.checkout_id),
+              ) ||
+              payments.some((payment) => data.charge_id === payment.charge_id),
+          );
+          if (!referenced) purge.push(candidate);
+        }
+        for (const candidate of purge) {
+          const id = String(candidate.id);
+          const submissionKey = String(candidate.submission_key);
+          await tx.query(
+            `INSERT INTO ${p}retired_submissions (submission_hash, retired_at) VALUES (?, ?) ON CONFLICT DO NOTHING`,
+            [hash(`submission:${submissionKey}`), removedAt],
+          );
+          const attempts = await tx.query(
+            `SELECT reference, checkout_id FROM ${p}attempts WHERE contribution_id = ?`,
+            [id],
+          );
+          const payments = await tx.query(
+            `SELECT charge_id FROM ${p}payments WHERE contribution_id = ?`,
+            [id],
+          );
+          const events = await tx.query(
+            `SELECT id, fingerprint, payload FROM ${p}events WHERE contribution_id = ?`,
+            [id],
+          );
+          const remember = async (
+            kind: "reference" | "checkout" | "charge",
+            value: unknown,
+          ) => {
+            if (typeof value !== "string" || !value) return;
+            await tx.query(
+              `INSERT INTO ${p}retired_identifiers (kind, identifier_hash, retired_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING`,
+              [kind, hash(`${kind}:${value}`), removedAt],
+            );
+          };
+          for (const attempt of attempts) {
+            await remember("reference", attempt.reference);
+            await remember("checkout", attempt.checkout_id);
+          }
+          for (const payment of payments)
+            await remember("charge", payment.charge_id);
+          for (const event of events) {
+            const eventHash = hash(`event:${String(event.id)}`);
+            await tx.query(
+              `INSERT INTO ${p}retired_events (event_hash, fingerprint, retired_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING`,
+              [eventHash, String(event.fingerprint), removedAt],
+            );
+            const storedEvent = decode<BachsEvent>(event.payload);
+            await remember("reference", storedEvent.data.reference);
+            await remember("checkout", storedEvent.data.checkout_id);
+            await remember("charge", storedEvent.data.charge_id);
+            const conflicts = await tx.query(
+              `SELECT fingerprint FROM ${p}event_conflicts WHERE event_id = ?`,
+              [event.id],
+            );
+            for (const conflictRow of conflicts)
+              await tx.query(
+                `INSERT INTO ${p}retired_event_conflicts (event_hash, fingerprint) VALUES (?, ?) ON CONFLICT DO NOTHING`,
+                [eventHash, String(conflictRow.fingerprint)],
+              );
+          }
+
+          await tx.query(
+            `DELETE FROM ${p}payment_statements WHERE charge_id IN (SELECT charge_id FROM ${p}payments WHERE contribution_id = ?)`,
+            [id],
+          );
+          await tx.query(
+            `DELETE FROM ${p}refunds WHERE charge_id IN (SELECT charge_id FROM ${p}payments WHERE contribution_id = ?)`,
+            [id],
+          );
+          await tx.query(
+            `DELETE FROM ${p}disputes WHERE charge_id IN (SELECT charge_id FROM ${p}payments WHERE contribution_id = ?)`,
+            [id],
+          );
+          await tx.query(`DELETE FROM ${p}payments WHERE contribution_id = ?`, [
+            id,
+          ]);
+          await tx.query(
+            `DELETE FROM ${p}event_conflicts WHERE event_id IN (SELECT id FROM ${p}events WHERE contribution_id = ?)`,
+            [id],
+          );
+          await tx.query(`DELETE FROM ${p}events WHERE contribution_id = ?`, [
+            id,
+          ]);
+          await tx.query(
+            `DELETE FROM ${p}owner_records WHERE contribution_id = ?`,
+            [id],
+          );
+          await tx.query(`DELETE FROM ${p}effects WHERE contribution_id = ?`, [
+            id,
+          ]);
+          await tx.query(`DELETE FROM ${p}attempts WHERE contribution_id = ?`, [
+            id,
+          ]);
+          await tx.query(`DELETE FROM ${p}contributions WHERE id = ?`, [id]);
+        }
+        const purgedIds = new Set(purge.map((row) => String(row.id)));
+        return (
+          due.filter((row) => !purgedIds.has(String(row.id))).length +
+          purge.length
+        );
       });
     },
     async claimEffect(

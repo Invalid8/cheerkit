@@ -1,4 +1,4 @@
-export const CHEERKIT_SCHEMA_VERSION = 2;
+export const CHEERKIT_SCHEMA_VERSION = 3;
 
 export interface SchemaOptions {
   /** Table name prefix; lower-case letters, digits, and underscores. Defaults to `cheerkit_`. */
@@ -170,6 +170,35 @@ CREATE TABLE ${p}payment_statements (
   CHECK ((fee_amount IS NULL) = (fee_currency IS NULL))
 );
 UPDATE ${p}meta SET version = 2 WHERE singleton = 1;
+`,
+    },
+    {
+      version: 3,
+      sql: `
+CREATE TABLE ${p}retired_submissions (
+  submission_hash TEXT PRIMARY KEY,
+  retired_at TEXT NOT NULL
+);
+
+CREATE TABLE ${p}retired_identifiers (
+  kind TEXT NOT NULL CHECK (kind IN ('reference', 'checkout', 'charge')),
+  identifier_hash TEXT NOT NULL,
+  retired_at TEXT NOT NULL,
+  PRIMARY KEY (kind, identifier_hash)
+);
+
+CREATE TABLE ${p}retired_events (
+  event_hash TEXT PRIMARY KEY,
+  fingerprint TEXT NOT NULL,
+  retired_at TEXT NOT NULL
+);
+
+CREATE TABLE ${p}retired_event_conflicts (
+  event_hash TEXT NOT NULL REFERENCES ${p}retired_events (event_hash),
+  fingerprint TEXT NOT NULL,
+  PRIMARY KEY (event_hash, fingerprint)
+);
+UPDATE ${p}meta SET version = 3 WHERE singleton = 1;
 `,
     },
   ];

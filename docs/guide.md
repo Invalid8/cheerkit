@@ -22,7 +22,7 @@ Cheerkit keeps its tables in your application's database and never creates, alte
    ```ts
    import { cheerkitMigrations } from "cheerkit/server";
 
-   const migrations = cheerkitMigrations({ prefix: "cheerkit_" }); // [{ version: 1, sql }, { version: 2, sql }]
+   const migrations = cheerkitMigrations({ prefix: "cheerkit_" }); // versions 1–3
    ```
 
    The SQL runs on both Postgres and SQLite. It has no `IF NOT EXISTS`, so a clash with one of your tables fails instead of taking it over.
@@ -107,7 +107,7 @@ const service = createSupportService({
   checkout,
   webhooks,
   resultSecret,
-  retention: { supporterDataDays: 30 },
+  retention: { supporterDataDays: 30, paymentRecordYears: 6 },
 });
 const handle = createSupportHandler(service, {
   basePath: "/api/support",
@@ -130,6 +130,8 @@ On plain Node, convert the incoming request to a `Request` (see `examples/http-n
 - `allowedOrigins`: exact HTTPS origins of your site (or `localhost`). Other sites cannot start contributions or send owner changes.
 - `clientKey`: the caller's address for rate limiting. Use the socket address, or a header your own proxy overwrites; never a forwarding header the client can set.
 - `resultSecret`: 32+ random characters. Rotating it invalidates existing result links.
+- `retention.supporterDataDays` removes supporter name, message, and metadata after that many days.
+- `retention.paymentRecordYears` is optional. When set, settled payment records older than that many calendar years are deleted. Six years is configured above; omit the option to keep financial records indefinitely.
 
 ## The supporter's page
 
@@ -203,6 +205,8 @@ Some events arrive before the contribution they belong to is ready, and post-pay
 
 - **A long-running server:** `startPendingWorker(service, { intervalMs: 60_000, pageSize: 50, maxPages: 20 })`.
 - **Serverless:** call `runPendingPass(service, { pageSize, maxPages })`, `service.runEffects({ limit })`, and `service.applyRetention()` from a scheduled route.
+
+The worker applies both retention rules on every pass. Payment records are purged only when the contribution is settled and has no pending/review webhook, processing refund, open dispute, or incomplete post-payment effect. Eligible records are deleted together in one transaction. Cheerkit retains one-way hashes of old submission keys, provider references, checkout IDs, charge IDs, and webhook IDs so retries or replays cannot recreate expired records. These tombstones contain no amounts, supporter data, or raw provider identifiers and stay in the database backups. A webhook that matches a retired identifier is acknowledged as `retired` and not processed again.
 
 **Post-payment effects** (a thank-you email, for example): name them on the store (`effects: ["thank-you"]`) and give the service a handler for each. An effect runs at least once after confirmation, retries with backoff, and never changes the payment. Use its `id` as the idempotency key in the other system.
 
@@ -310,12 +314,13 @@ The site owner is the data controller; Cheerkit sends nothing to its authors.
 | -------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------- |
 | Display name and message (if collected)      | `contributions`                                                   | Until retention, or removal by supporter or owner |
 | Your metadata (must not be personal)         | `contributions`                                                   | As above                                          |
-| Amount, currency, time, outcome, context     | `contributions`, `attempts`                                       | Life of the installation (financial records)      |
-| Bachs identifiers, amounts, fees, settlement | `payments`, `refunds`, `disputes`, `events`, `payment_statements` | As above                                          |
+| Amount, currency, time, outcome, context     | `contributions`, `attempts`                                       | Life of the installation, or `paymentRecordYears` |
+| Bachs identifiers, amounts, fees, settlement | `payments`, `refunds`, `disputes`, `events`, `payment_statements` | Same as above                                     |
+| Dedupe hashes after payment-record expiry    | `retired_submissions`, `retired_identifiers`, `retired_events`    | Kept in the database to block old retries/replays |
 | Payer email, name, phone, address            | Never: removed before anything is written                         | —                                                 |
 | IP addresses                                 | Never: rate limiting is in memory                                 | —                                                 |
 
-- **Retention** (`retention.supporterDataDays`, required) removes name, message, and metadata from settled contributions; payment facts stay.
+- **Retention** (`retention.supporterDataDays`, required) removes name, message, and metadata. Optional `paymentRecordYears` deletes settled payment details after the configured number of calendar years, retaining only irreversible dedupe hashes. Records with open disputes, unresolved events, processing refunds, or unfinished effects wait until resolved.
 - **Supporters** read or remove their own name and message with their result token.
 - **The owner** removes one contribution's personal data, or exports everything (`GET /owner/export`).
 - **Encryption at rest:** pass `encryptionKey` (32 random bytes, base64url) to `openStore` to store name, message, and metadata with AES-256-GCM.
