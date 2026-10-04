@@ -1,9 +1,27 @@
 {
   "name": "cheerkit",
   "version": "0.1.0",
-  "private": true,
   "description": "Headless one-off support payments for applications you already run: your UI, your database, verified provider webhooks.",
   "license": "MIT",
+  "author": "Invalid8",
+  "homepage": "https://github.com/Invalid8/cheerkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Invalid8/cheerkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Invalid8/cheerkit/issues"
+  },
+  "keywords": [
+    "payments",
+    "support",
+    "webhooks",
+    "bachs",
+    "self-hosted",
+    "headless",
+    "postgres",
+    "sqlite"
+  ],
   "type": "module",
   "sideEffects": [
     "./dist/ui/define.js"
@@ -82,5 +100,9 @@
     "pg": "8.23.0",
     "prettier": "3.9.9",
     "typescript": "5.9.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
