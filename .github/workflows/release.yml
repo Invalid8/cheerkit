@@ -36,4 +36,10 @@ jobs:
           fi
 
       - name: Publish with provenance
-        run: npm publish
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if npm view "cheerkit@$version" version >/dev/null 2>&1; then
+            echo "cheerkit@$version is already on npm; nothing to publish."
+            exit 0
+          fi
+          npm publish
