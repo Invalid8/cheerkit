@@ -20,6 +20,8 @@ First release.
 - Optional six-year payment-record retention, with hashed tombstones to block retries and webhook replays after deletion.
 - Framework-free examples: support page, modal, result page, and owner admin.
 - `cheerkit/ui`: a ready-made support template, `<cheerkit-support>`, for any site (page, dialog, and result views; theme colour, dark mode, wording, and parts adjustable), and `createSupport` for custom interfaces on the same logic.
+- Units on contexts: an optional `unit` (names, icon, start and maximum count) and a `unitPrice` per currency, validated against the limits, returned by the public context, and editable in the admin.
+- Redesigned templates: the support template is a two-step stepper (count units, add an optional name and note, pay) with a typed-amount fallback, one host-chosen currency and no currency switch, person, product, or project headers, and the Ink & oxblood and Midnight & brass themes; the admin follows the same design.
 - `<cheerkit-admin>`: a ready-made owner admin (contributions, detail and actions, unmatched notices, contexts, follow-up actions, export), and `createOwnerClient` with typed calls for every owner route.
 - `cheerkit-admin`: a loopback-only local runner with a one-use access link, plus cross-site Fetch Metadata refusal and same-origin resource policy on owner responses.
 - The templates warn in the browser console when configured text on the primary color is below a 4.5:1 contrast ratio. Admin dialogs have accessible names, keyboard focus remains visible and is restored after view changes, and tab-return refreshes avoid interrupting active controls.

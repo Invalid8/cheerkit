@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
     <title>Support template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap"
+    />
     <style>
       body {
         margin: 0;
         padding: 28px 16px 48px;
         font-family: system-ui, sans-serif;
-        background: #f3f0e8;
-        color: #1f1e1b;
+        background: #e9e5de;
+        color: #121110;
+      }
+      body.dark {
+        background: #0b0b0c;
+        color: #f4f1ea;
       }
       nav {
         display: flex;
@@ -32,8 +41,9 @@
         font: inherit;
         padding: 8px 14px;
         border-radius: 10px;
-        border: 1px solid #ddd7ca;
-        background: #fbfaf6;
+        border: 1px solid #ddd7cd;
+        background: #fbfaf7;
+        color: #121110;
         cursor: pointer;
       }
     </style>
@@ -42,9 +52,7 @@
     <nav>
       <strong>Field Notes</strong>
       <div>
-        <button type="button" data-color="">Default colour</button>
-        <button type="button" data-color="#2f6b3f">Green</button>
-        <button type="button" data-color="#FFD60A">Yellow</button>
+        <button type="button" data-theme-toggle>Light / dark</button>
         <button type="button" data-cheerkit-open="my-work">
           Buy me a coffee
         </button>
@@ -54,11 +62,13 @@
     <cheerkit-support
       api="/api/support"
       context="my-work"
+      currency="NGN"
       layout="page"
     ></cheerkit-support>
     <cheerkit-support
       api="/api/support"
       context="my-work"
+      currency="NGN"
       layout="dialog"
     ></cheerkit-support>
 
@@ -66,21 +76,18 @@
       import "/ui/define.js";
       const config = {
         name: "Kemi Lawal",
-        tagline: "Writes Field Notes, a weekly letter on Lagos buildings",
-        title: "Buy Kemi a coffee",
-        description:
-          "Field Notes is free to read. If a letter helped you, a coffee keeps the next one coming.",
-        amountNotes: ["1 coffee", "2 coffees", "5 coffees"],
-        text: { messagePlaceholder: "Say something to Kemi" },
+        tagline: "Field Notes",
+        question: "Buy Kemi a coffee",
+        where: "Keeps the weekly letter free to read.",
       };
       const elements = document.querySelectorAll("cheerkit-support");
       for (const element of elements) element.config = config;
-      for (const button of document.querySelectorAll("[data-color]"))
-        button.addEventListener("click", () => {
+      document
+        .querySelector("[data-theme-toggle]")
+        .addEventListener("click", () => {
+          const dark = document.body.classList.toggle("dark");
           for (const element of elements)
-            if (button.dataset.color)
-              element.setAttribute("color", button.dataset.color);
-            else element.removeAttribute("color");
+            element.setAttribute("theme", dark ? "dark" : "light");
         });
     </script>
   </body>

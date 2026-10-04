@@ -15,15 +15,17 @@ Everything Cheerkit exports, by import path. For how to put it together, see the
 
 Safe in browsers.
 
-| Export                                                             | Does                                                                                                                                                          |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `defineSupportContext(input)`                                      | Validates and freezes a context: `id`, `name`, `currencies`, `acceptingContributions` (default `true`), `collectName` and `collectMessage` (default `false`)  |
-| `createContributionIntent(context, submission, { id, createdAt })` | Validates a supporter's submission against the context; returns a pending intent with a normalized amount                                                     |
-| `validateMetadata(value)`                                          | Checks application metadata: at most 20 keys matching `^[a-z][a-z0-9_]{0,39}$`, values text (≤ 500 characters), finite numbers, or booleans, ≤ 4 KiB in total |
-| `normalizeAmount(value, fractionDigits)`                           | Normalizes a positive decimal string to the currency's precision; rejects excess precision instead of rounding                                                |
-| `CheerkitError`                                                    | Validation failure with a `code` ([errors](#errors))                                                                                                          |
+| Export                                                             | Does                                                                                                                                                                  |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `defineSupportContext(input)`                                      | Validates and freezes a context: `id`, `name`, `currencies`, `acceptingContributions` (default `true`), `collectName` and `collectMessage` (default `false`), `unit?` |
+| `createContributionIntent(context, submission, { id, createdAt })` | Validates a supporter's submission against the context; returns a pending intent with a normalized amount                                                             |
+| `validateMetadata(value)`                                          | Checks application metadata: at most 20 keys matching `^[a-z][a-z0-9_]{0,39}$`, values text (≤ 500 characters), finite numbers, or booleans, ≤ 4 KiB in total         |
+| `normalizeAmount(value, fractionDigits)`                           | Normalizes a positive decimal string to the currency's precision; rejects excess precision instead of rounding                                                        |
+| `CheerkitError`                                                    | Validation failure with a `code` ([errors](#errors))                                                                                                                  |
 
-**Currency rules:** `{ currency, fractionDigits (0–18), minimum, maximum?, suggestedAmounts? }`. Amounts are decimal strings; limits are inclusive; suggestions must fall inside them.
+**Currency rules:** `{ currency, fractionDigits (0–18), minimum, maximum?, suggestedAmounts?, unitPrice? }`. Amounts are decimal strings; limits are inclusive; suggestions and one unit's price must fall inside them.
+
+**Unit:** `{ one, other, icon? (coffee, sprout, heart, book, radio; default coffee), start? (default 1), max? (default 20) }`. Counts are whole numbers from 1 to 100, and `start` may not exceed `max`. The public context includes the unit, and each currency its `unitPrice`.
 
 **Submission:** `{ amount, currency, supporterName? (≤ 120), message? (≤ 2,000) }`. Anything else is rejected; name and message are refused unless the context collects them.
 
@@ -252,7 +254,7 @@ Browser only. `cheerkit/ui/define` registers the elements when imported; `cheerk
 | `color`   | Theme colour; text on it is chosen for contrast                       |
 | `theme`   | `light` (default), `dark`, or `system`                                |
 
-The `config` property takes `name`, `avatar` (HTTPS or same-site URL), `tagline`, `title`, `description`, `amountNotes`, `locale`, `text` (any of `defaultText`), `appearance.variables`, and `metadata`. Methods: `open()`, `close()`. Event: `cheerkit:state` with the current state in `detail`.
+The `currency` attribute picks the one currency to show (default: the context's first). The `config` property takes `name`, `avatar` (a person's photo) or `logo` (a square logo), both HTTPS or same-site URLs, or `mark` (a built-in square icon), plus `tagline`, `question`, `where`, `locale`, `text` (any of `defaultText`), `appearance.variables`, and `metadata`. Methods: `open()`, `close()`. Event: `cheerkit:state` with the current state in `detail`.
 
 Theme variables (`--ck-<name>`): `color-background`, `color-surface`, `color-text`, `color-text-muted`, `color-border`, `color-primary`, `color-on-primary`, `color-danger`, `color-success`, `color-warning`, `font-family`, `font-size-base`, `radius`, `radius-control`, `border-width`.
 
@@ -260,7 +262,7 @@ Parts: `dialog`, `card`, `header`, `avatar`, `name`, `tagline`, `title`, `descri
 
 ### `createSupport(options)`
 
-`{ api, contextId, metadata?, storage?, fetch?, maxWaitMs?, delays? }` → an object with `state`, `subscribe(listener)`, `load()`, `submit(submission)`, `checkResult()`, `watchResult(signal?)`, `tryAgain()`, `readOwnData()`, `removeOwnData()`.
+`{ api, contextId, metadata?, storage?, fetch?, maxWaitMs?, delays? }` → an object with `state`, `subscribe(listener)`, `load()`, `readContext()`, `submit(submission)`, `checkResult()`, `watchResult(signal?)`, `tryAgain()`, `readOwnData()`, `removeOwnData()`.
 
 | State         | Meaning                                                                  |
 | ------------- | ------------------------------------------------------------------------ |

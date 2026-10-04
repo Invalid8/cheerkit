@@ -1,45 +1,194 @@
 {
   "$description": "Cheerkit's default component theme tokens. Hosts can override the corresponding --ck-* custom properties.",
   "light": {
+    "$description": "Ink & oxblood",
     "color": {
-      "background": { "$type": "color", "$value": "#f3f0e8" },
-      "surface": { "$type": "color", "$value": "#fbfaf6" },
-      "text": { "$type": "color", "$value": "#1f1e1b" },
-      "text-muted": { "$type": "color", "$value": "#5f5b52" },
-      "border": { "$type": "color", "$value": "#ddd7ca" },
-      "primary": { "$type": "color", "$value": "#1c2b4a" },
-      "on-primary": { "$type": "color", "$value": "#ffffff" },
-      "danger": { "$type": "color", "$value": "#b42318" },
-      "success": { "$type": "color", "$value": "#1e6b45" },
-      "warning": { "$type": "color", "$value": "#8a5a00" }
+      "background": {
+        "$type": "color",
+        "$value": "#e9e5de"
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "#fbfaf7"
+      },
+      "field": {
+        "$type": "color",
+        "$value": "#f1ede6"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "#121110"
+      },
+      "text-muted": {
+        "$type": "color",
+        "$value": "#6e6860"
+      },
+      "border": {
+        "$type": "color",
+        "$value": "#ddd7cd"
+      },
+      "primary": {
+        "$type": "color",
+        "$value": "#5b1a22"
+      },
+      "primary-light": {
+        "$type": "color",
+        "$value": "#7a2a33"
+      },
+      "on-primary": {
+        "$type": "color",
+        "$value": "#fbf4f0"
+      },
+      "danger": {
+        "$type": "color",
+        "$value": "#b42318"
+      },
+      "success": {
+        "$type": "color",
+        "$value": "#1e6b45"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "#8a5a00"
+      }
     },
-    "font": { "family": { "$type": "fontFamily", "$value": "inherit" } },
+    "font": {
+      "family": {
+        "$type": "fontFamily",
+        "$value": [
+          "Schibsted Grotesk",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ]
+      }
+    },
     "font-size": {
-      "base": { "$type": "dimension", "$value": { "value": 16, "unit": "px" } }
+      "base": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
     },
     "radius": {
-      "card": { "$type": "dimension", "$value": { "value": 14, "unit": "px" } },
+      "card": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
       "control": {
         "$type": "dimension",
-        "$value": { "value": 10, "unit": "px" }
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        }
       }
     },
     "border": {
-      "width": { "$type": "dimension", "$value": { "value": 1, "unit": "px" } }
+      "width": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        }
+      }
     }
   },
   "dark": {
+    "$description": "Midnight & brass",
     "color": {
-      "background": { "$type": "color", "$value": "#161616" },
-      "surface": { "$type": "color", "$value": "#1f1f1f" },
-      "text": { "$type": "color", "$value": "#f2f0ea" },
-      "text-muted": { "$type": "color", "$value": "#a8a49a" },
-      "border": { "$type": "color", "$value": "#363431" },
-      "primary": { "$type": "color", "$value": "#3d5d9e" },
-      "on-primary": { "$type": "color", "$value": "#ffffff" },
-      "danger": { "$type": "color", "$value": "#f97066" },
-      "success": { "$type": "color", "$value": "#6cc08b" },
-      "warning": { "$type": "color", "$value": "#e0b04b" }
+      "background": {
+        "$type": "color",
+        "$value": "#0b0b0c"
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "#141416"
+      },
+      "field": {
+        "$type": "color",
+        "$value": "#1c1c1f"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "#f4f1ea"
+      },
+      "text-muted": {
+        "$type": "color",
+        "$value": "#9c978d"
+      },
+      "border": {
+        "$type": "color",
+        "$value": "#2a2a2e"
+      },
+      "primary": {
+        "$type": "color",
+        "$value": "#c8ae78"
+      },
+      "primary-light": {
+        "$type": "color",
+        "$value": "#e0c995"
+      },
+      "on-primary": {
+        "$type": "color",
+        "$value": "#17140d"
+      },
+      "danger": {
+        "$type": "color",
+        "$value": "#f97066"
+      },
+      "success": {
+        "$type": "color",
+        "$value": "#6cc08b"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "#e0b04b"
+      }
+    },
+    "font": {
+      "family": {
+        "$type": "fontFamily",
+        "$value": ["Manrope", "ui-sans-serif", "system-ui", "sans-serif"]
+      }
+    },
+    "font-size": {
+      "base": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    },
+    "radius": {
+      "card": {
+        "$type": "dimension",
+        "$value": {
+          "value": 22,
+          "unit": "px"
+        }
+      },
+      "control": {
+        "$type": "dimension",
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        }
+      }
+    },
+    "border": {
+      "width": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        }
+      }
     }
   }
 }

@@ -4,6 +4,15 @@ export interface CurrencyRules {
   readonly minimum: string;
   readonly maximum?: string;
   readonly suggestedAmounts: readonly string[];
+  readonly unitPrice?: string;
+}
+
+export interface SupportUnit {
+  readonly one: string;
+  readonly other: string;
+  readonly icon: "coffee" | "sprout" | "heart" | "book" | "radio";
+  readonly start: number;
+  readonly max: number;
 }
 
 export interface PublicContext {
@@ -12,6 +21,7 @@ export interface PublicContext {
   readonly currencies: readonly CurrencyRules[];
   readonly collectName: boolean;
   readonly collectMessage: boolean;
+  readonly unit?: SupportUnit;
   readonly fees: "owner" | "supporter" | "account_default";
 }
 
@@ -79,6 +89,8 @@ export interface Support {
   readonly state: SupportState;
   subscribe(listener: (state: SupportState) => void): () => void;
   load(): Promise<void>;
+  /** Reads the context without changing the state, for views that only show a result. */
+  readContext(): Promise<PublicContext>;
   submit(submission: Submission): Promise<void>;
   /** Loads the result saved in this tab, if any. */
   checkResult(): Promise<void>;
@@ -255,12 +267,15 @@ export function createSupport(options: SupportOptions): Support {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
+    readContext() {
+      return call<PublicContext>(
+        `/contexts/${encodeURIComponent(options.contextId)}`,
+      );
+    },
     async load() {
       set({ status: "loading" });
       try {
-        const context = await call<PublicContext>(
-          `/contexts/${encodeURIComponent(options.contextId)}`,
-        );
+        const context = await this.readContext();
         set(
           context.acceptingContributions
             ? { status: "ready", context }

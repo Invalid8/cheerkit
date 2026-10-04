@@ -14,6 +14,8 @@ import {
 } from "./owner.js";
 import { themeVariables, type ThemeVariable } from "./styles.js";
 
+const unitIcons = ["coffee", "sprout", "heart", "book", "radio"] as const;
+
 export const defaultAdminText = {
   adminLabel: "Support admin",
   navContributions: "Contributions",
@@ -134,6 +136,14 @@ export const defaultAdminText = {
   collectMessage: "Message",
   collectMessageHint: "Up to 280 characters",
   saveChanges: "Save changes",
+  unitSection: "What supporters count",
+  unitHint: "Leave the names empty to let supporters type an amount instead.",
+  unitOne: "One",
+  unitOther: "Many",
+  unitIcon: "Icon",
+  unitStart: "Start at",
+  unitMax: "Up to",
+  unitPrice: "Price of one",
   editorFoot: "Saved settings apply to new contributions only.",
   conflictTitle: "These settings changed while you were editing",
   conflictBody:
@@ -425,10 +435,18 @@ export class CheerkitAdminElement extends HTMLElement {
         ? h("span", {}, text.adminLabel)
         : null,
     );
+    const siteName =
+      this.#config.siteName ??
+      this.getAttribute("site-name") ??
+      text.adminLabel;
     this.#site.replaceChildren(
-      ...(logo
-        ? [h("img", { src: logo, alt: "", referrerpolicy: "no-referrer" })]
-        : []),
+      logo
+        ? h("img", { src: logo, alt: "", referrerpolicy: "no-referrer" })
+        : h(
+            "span",
+            { class: "site-mark", "aria-hidden": "true" },
+            siteName.charAt(0).toUpperCase(),
+          ),
       name,
     );
   }
@@ -1685,6 +1703,11 @@ export class CheerkitAdminElement extends HTMLElement {
     }) as HTMLInputElement;
     const rows = context.currencies.map((rules) => ({
       rules,
+      unitPrice: input(
+        rules.unitPrice ? plain(rules.unitPrice) : "",
+        `${rules.currency} ${text.unitPrice}`,
+        `ck-${rules.currency}-unit-price`,
+      ),
       suggested: input(
         rules.suggestedAmounts.map(plain).join(", "),
         `${rules.currency} ${text.suggested}`,
@@ -1734,6 +1757,64 @@ export class CheerkitAdminElement extends HTMLElement {
       text.collectMessage,
       text.collectMessageHint,
     );
+    const unitText = (idValue: string, value: string, label: string) =>
+      h("input", {
+        class: "input",
+        id: idValue,
+        value,
+        maxlength: "40",
+        autocomplete: "off",
+        "aria-label": label,
+      }) as HTMLInputElement;
+    const unitNumber = (idValue: string, value: number, label: string) =>
+      h("input", {
+        class: "input",
+        id: idValue,
+        value: String(value),
+        inputmode: "numeric",
+        autocomplete: "off",
+        "aria-label": label,
+      }) as HTMLInputElement;
+    const unitOne = unitText(
+      "ck-unit-one",
+      context.unit?.one ?? "",
+      text.unitOne,
+    );
+    const unitOther = unitText(
+      "ck-unit-other",
+      context.unit?.other ?? "",
+      text.unitOther,
+    );
+    const unitIcon = h(
+      "select",
+      { class: "input", id: "ck-unit-icon", "aria-label": text.unitIcon },
+      ...unitIcons.map(
+        (name) =>
+          new Option(
+            name,
+            name,
+            false,
+            (context.unit?.icon ?? "coffee") === name,
+          ),
+      ),
+    ) as HTMLSelectElement;
+    const unitStart = unitNumber(
+      "ck-unit-start",
+      context.unit?.start ?? 1,
+      text.unitStart,
+    );
+    const unitMax = unitNumber(
+      "ck-unit-max",
+      context.unit?.max ?? 20,
+      text.unitMax,
+    );
+    const unitField = (idValue: string, label: string, control: HTMLElement) =>
+      h(
+        "div",
+        { class: "field" },
+        h("label", { class: "label", for: idValue }, label),
+        control,
+      );
     const save = h(
       "button",
       { type: "submit", class: "button" },
@@ -1767,6 +1848,7 @@ export class CheerkitAdminElement extends HTMLElement {
           "div",
           { class: "currency-row head" },
           h("span", {}, text.currency),
+          h("span", {}, text.unitPrice),
           h(
             "span",
             {},
@@ -1780,10 +1862,26 @@ export class CheerkitAdminElement extends HTMLElement {
             "div",
             { class: "currency-row" },
             h("strong", {}, row.rules.currency),
+            row.unitPrice,
             row.suggested,
             row.minimum,
             row.maximum,
           ),
+        ),
+      ),
+      h(
+        "div",
+        { class: "section" },
+        h("h3", { class: "section-title" }, text.unitSection),
+        h("p", { class: "hint" }, text.unitHint),
+        h(
+          "div",
+          { class: "unit-grid" },
+          unitField("ck-unit-one", text.unitOne, unitOne),
+          unitField("ck-unit-other", text.unitOther, unitOther),
+          unitField("ck-unit-icon", text.unitIcon, unitIcon),
+          unitField("ck-unit-start", text.unitStart, unitStart),
+          unitField("ck-unit-max", text.unitMax, unitMax),
         ),
       ),
       h(
@@ -1811,15 +1909,31 @@ export class CheerkitAdminElement extends HTMLElement {
             acceptingContributions: accepting.checked,
             collectName: collectName.checked,
             collectMessage: collectMessage.checked,
-            currencies: rows.map(({ rules, suggested, minimum, maximum }) => ({
-              currency: rules.currency,
-              fractionDigits: rules.fractionDigits,
-              minimum: minimum.value.trim(),
-              ...(maximum.value.trim()
-                ? { maximum: maximum.value.trim() }
-                : {}),
-              suggestedAmounts: amounts(suggested.value),
-            })),
+            ...(unitOne.value.trim() && unitOther.value.trim()
+              ? {
+                  unit: {
+                    one: unitOne.value.trim(),
+                    other: unitOther.value.trim(),
+                    icon: unitIcon.value as (typeof unitIcons)[number],
+                    start: Number(unitStart.value),
+                    max: Number(unitMax.value),
+                  },
+                }
+              : {}),
+            currencies: rows.map(
+              ({ rules, unitPrice, suggested, minimum, maximum }) => ({
+                currency: rules.currency,
+                fractionDigits: rules.fractionDigits,
+                ...(unitPrice.value.trim()
+                  ? { unitPrice: unitPrice.value.trim().replace(/,/g, "") }
+                  : {}),
+                minimum: minimum.value.trim(),
+                ...(maximum.value.trim()
+                  ? { maximum: maximum.value.trim() }
+                  : {}),
+                suggestedAmounts: amounts(suggested.value),
+              }),
+            ),
           },
           revision,
         );

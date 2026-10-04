@@ -77,6 +77,7 @@ await store.syncContext({
   name: "Coffee", // internal name, never shown publicly
   collectName: true, // off by default
   collectMessage: true, // off by default
+  unit: { one: "coffee", other: "coffees", icon: "coffee", start: 1 }, // optional
   currencies: [
     {
       currency: "NGN",
@@ -84,12 +85,14 @@ await store.syncContext({
       minimum: "1500",
       maximum: "100000",
       suggestedAmounts: ["1500", "3000", "4500"],
+      unitPrice: "1500",
     },
     {
       currency: "USD",
       fractionDigits: 2,
       minimum: "2",
       suggestedAmounts: ["2", "4", "6"],
+      unitPrice: "2",
     },
   ],
 });
@@ -97,6 +100,7 @@ await store.syncContext({
 
 - Amounts are decimal strings, never numbers. Precision is per currency; excess precision is rejected, not rounded.
 - Currencies are never converted or added together.
+- With a `unit` and a `unitPrice` per currency, supporters count units (3 coffees = ₦4,500) instead of typing money. One unit's price must fall within that currency's limits.
 - `syncContext` suits contexts defined in code: it creates the context, or updates its rules while keeping the owner's pause (`acceptingContributions`). Use `putContext` with a revision for edits made elsewhere.
 
 ## Serving the API
@@ -168,11 +172,9 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
     element.config = {
       name: "Kemi Lawal",
       avatar: "/kemi.jpg",
-      tagline: "Writes Field Notes, a weekly letter",
-      title: "Buy Kemi a coffee",
-      description:
-        "If a letter helped you, a coffee keeps the next one coming.",
-      amountNotes: ["1 coffee", "2 coffees", "5 coffees"],
+      tagline: "Field Notes",
+      question: "Buy Kemi a coffee",
+      where: "Keeps the weekly letter free to read.",
     };
 </script>
 
@@ -181,20 +183,24 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
   api="/api/support"
   context="coffee"
   layout="dialog"
-  color="#2f6b3f"
+  currency="NGN"
 ></cheerkit-support>
 ```
 
 - **Loading it:** with a bundler, `import "cheerkit/ui/define"`. Without one, serve the files in `node_modules/cheerkit/dist/ui/` from your site and import `define.js` by its path (`examples/ui/template.html` does this).
+- **Counting, not typing:** when the context has a `unit` and each currency a `unitPrice` (see [What people can support](#what-people-can-support)), supporters count units with − and + and see the total; "Enter a different amount" lets them type any amount within the limits instead. Without a unit, they type an amount. The owner can change the unit and prices in the admin's Contexts screen.
+- **One currency:** the supporter never chooses a currency. Pass the one to show with `currency="NGN"` (for example from the visitor's country, as Baseband does); without it, the context's first currency is used.
+- **Who is supported:** `config.avatar` shows a person's photo, `config.logo` a product or project logo, and `config.mark` a built-in square icon (`coffee`, `sprout`, `heart`, `book`, `radio`, `map`, `audio`). `config.where` adds one line on where the money goes.
+- **Fonts:** the light theme uses Schibsted Grotesk and the dark theme Manrope, falling back to the system font. The component never loads fonts itself; add them to your page if you want them.
 - **Where it shows:** `layout="page"` or `"inline"` renders in place; `layout="dialog"` opens from any element with `data-cheerkit-open="<context>"` or from `element.open()`.
 - **After checkout:** put `<cheerkit-support … view="result">` on the page your Bachs success URL points to. It checks the payment, thanks the supporter, and lets them remove their name and message.
-- **Your colour:** `color="#…"` sets the theme colour; text on it switches between white and near-black to stay readable. `theme="dark"` or `theme="system"` turns on dark mode (light by default). Every colour, the font, corner radius, and border width can also be set from your CSS (`cheerkit-support { --ck-color-primary: …; }`) or `config.appearance.variables`. The browser console warns once if the primary color and its text fall below a 4.5:1 contrast ratio.
+- **Your colour:** `color="#…"` sets the theme colour; text on it switches between white and near-black to stay readable. The default themes are Ink & oxblood (light) and Midnight & brass (`theme="dark"`, or `theme="system"` to follow the device). Every colour, the font, corner radius, and border width can also be set from your CSS (`cheerkit-support { --ck-color-primary: …; }`) or `config.appearance.variables`. The browser console warns once if the primary color and its text fall below a 4.5:1 contrast ratio.
 - **Theme tokens:** [`tokens/cheerkit.tokens.json`](../tokens/cheerkit.tokens.json) lists the default light and dark values in Design Tokens Community Group format. The same names map to the component's public `--ck-*` CSS properties.
 - **Your words:** every label and message can be changed through `config.text`; amounts are formatted for `config.locale`.
-- **Finer styling:** named parts (`card`, `header`, `avatar`, `title`, `amount`, `input`, `button`, …) can be styled with `::part()`.
+- **Finer styling:** named parts (`card`, `header`, `avatar`, `question`, `stepper`, `step`, `units`, `total`, `where`, `input`, `button`, …) can be styled with `::part()`.
 - **Your own UI on the same logic:** `createSupport({ api, contextId })` from `cheerkit/ui` gives the state and actions the template uses.
 
-The browser keeps only a random submission key and the result token, in `sessionStorage`, never the name, message, or amount. Currencies, amounts, and which fields appear come from the context on the server, so a context with one currency shows no currency switch.
+The browser keeps only a random submission key and the result token, in `sessionStorage`, never the name, message, or amount. Units, prices, limits, and which fields appear come from the context on the server; the name and note step is skipped when the context collects neither.
 
 For a local check under an enforcing Content Security Policy, run `npm run dev` and open `/strict.html`. It loads both templates with external scripts and styles, `style-src-attr 'none'`, and Trusted Types required for script sinks. Check the browser console for policy violations while using the support form and signing into the demo admin.
 

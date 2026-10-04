@@ -41,6 +41,7 @@ await store.putContext(
     name: "My work",
     collectName: true,
     collectMessage: true,
+    unit: { one: "coffee", other: "coffees", icon: "coffee", start: 3 },
     currencies: [
       {
         currency: "NGN",
@@ -48,6 +49,7 @@ await store.putContext(
         minimum: "100",
         maximum: "500000",
         suggestedAmounts: ["1000", "2500", "5000"],
+        unitPrice: "1500",
       },
       {
         currency: "USD",
@@ -55,6 +57,7 @@ await store.putContext(
         minimum: "1",
         maximum: "1000",
         suggestedAmounts: ["5", "10", "25"],
+        unitPrice: "2",
       },
     ],
   },
