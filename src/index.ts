@@ -6,6 +6,10 @@ export {
   type CurrencyRules,
   type SupportContextInput,
   type SupportContext,
+  type SupportUnit,
+  type SupportUnitInput,
+  type UnitIcon,
+  unitIcons,
 } from "./core/context.js";
 export {
   createContributionIntent,

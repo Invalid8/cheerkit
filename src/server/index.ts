@@ -93,6 +93,8 @@ export interface PublicContext {
   readonly currencies: SupportContext["currencies"];
   readonly collectName: boolean;
   readonly collectMessage: boolean;
+  /** What supporters count, when the context prices units; each currency then carries `unitPrice`. */
+  readonly unit?: SupportContext["unit"];
   /** Who pays Bachs processing fees: the owner, the supporter (shown at checkout), or the account's default. */
   readonly fees: "owner" | "supporter" | "account_default";
 }
@@ -532,6 +534,7 @@ export function createSupportService(
         currencies: context.currencies,
         collectName: context.collectName,
         collectMessage: context.collectMessage,
+        ...(context.unit ? { unit: context.unit } : {}),
         fees:
           checkout.feeBearer === "merchant"
             ? "owner"

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createContributionIntent, defineSupportContext } from "cheerkit";
+import {
+  CheerkitError,
+  createContributionIntent,
+  defineSupportContext,
+} from "cheerkit";
 
 const identity = {
   id: "contribution-1",
@@ -437,4 +441,48 @@ test("invalid currency configuration cannot reach contribution creation", () => 
     () => defineSupportContext({ ...config(), collectMessage: null }),
     { code: "INVALID_INPUT" },
   );
+});
+
+test("a unit is validated, defaulted, and priced within each currency's range", () => {
+  const base = {
+    id: "coffee",
+    name: "Coffee",
+    currencies: [
+      {
+        currency: "NGN",
+        fractionDigits: 2,
+        minimum: "500",
+        maximum: "100000",
+        unitPrice: "1500",
+      },
+    ],
+  };
+  const context = defineSupportContext({
+    ...base,
+    unit: { one: "coffee", other: "coffees" },
+  });
+  assert.deepEqual(context.unit, {
+    one: "coffee",
+    other: "coffees",
+    icon: "coffee",
+    start: 1,
+    max: 20,
+  });
+  assert.equal(context.currencies[0].unitPrice, "1500.00");
+  const invalid = [
+    { unit: { one: "coffee", other: "coffees", icon: "rocket" } },
+    { unit: { one: "coffee", other: "coffees", start: 5, max: 3 } },
+    { unit: { one: "coffee", other: "coffees", max: 0 } },
+    { unit: { one: "", other: "coffees" } },
+    { unit: { one: "coffee", other: "coffees", colour: "red" } },
+    {
+      currencies: [{ ...base.currencies[0], unitPrice: "100" }],
+    },
+  ];
+  for (const change of invalid)
+    assert.throws(
+      () => defineSupportContext({ ...base, ...change }),
+      CheerkitError,
+    );
+  assert.equal(defineSupportContext(base).unit, undefined);
 });

@@ -13,6 +13,8 @@ export interface CurrencyRulesInput {
   readonly minimum: string;
   readonly maximum?: string;
   readonly suggestedAmounts?: readonly string[];
+  /** Price of one unit in this currency, when the context counts units. */
+  readonly unitPrice?: string;
 }
 
 export interface CurrencyRules {
@@ -21,6 +23,36 @@ export interface CurrencyRules {
   readonly minimum: string;
   readonly maximum?: string;
   readonly suggestedAmounts: readonly string[];
+  readonly unitPrice?: string;
+}
+
+export const unitIcons = [
+  "coffee",
+  "sprout",
+  "heart",
+  "book",
+  "radio",
+] as const;
+
+export type UnitIcon = (typeof unitIcons)[number];
+
+/** What supporters count instead of typing money, such as coffees. */
+export interface SupportUnit {
+  readonly one: string;
+  readonly other: string;
+  readonly icon: UnitIcon;
+  /** Count shown first. */
+  readonly start: number;
+  /** Highest count offered. */
+  readonly max: number;
+}
+
+export interface SupportUnitInput {
+  readonly one: string;
+  readonly other: string;
+  readonly icon?: UnitIcon;
+  readonly start?: number;
+  readonly max?: number;
 }
 
 export interface SupportContextInput {
@@ -30,6 +62,7 @@ export interface SupportContextInput {
   readonly currencies: readonly CurrencyRulesInput[];
   readonly collectName?: boolean;
   readonly collectMessage?: boolean;
+  readonly unit?: SupportUnitInput;
 }
 
 export interface SupportContext {
@@ -39,6 +72,7 @@ export interface SupportContext {
   readonly currencies: readonly CurrencyRules[];
   readonly collectName: boolean;
   readonly collectMessage: boolean;
+  readonly unit?: SupportUnit;
 }
 
 export function isWithinRules(amount: string, rules: CurrencyRules): boolean {
@@ -57,6 +91,7 @@ function currencyRules(input: unknown): CurrencyRules {
     "minimum",
     "maximum",
     "suggestedAmounts",
+    "unitPrice",
   ]);
   if (
     typeof value.currency !== "string" ||
@@ -90,11 +125,16 @@ function currencyRules(input: unknown): CurrencyRules {
       "Suggested amounts must be an array.",
     );
   }
+  const unitPrice =
+    value.unitPrice === undefined
+      ? undefined
+      : normalizeAmount(value.unitPrice, fractionDigits);
   const rules: CurrencyRules = {
     currency: value.currency,
     fractionDigits,
     minimum,
     ...(maximum === undefined ? {} : { maximum }),
+    ...(unitPrice === undefined ? {} : { unitPrice }),
     suggestedAmounts: Object.freeze([
       ...new Set(
         suggestions.map((amount: unknown) =>
@@ -109,7 +149,55 @@ function currencyRules(input: unknown): CurrencyRules {
       "Suggested amounts must be within the configured range.",
     );
   }
+  if (unitPrice !== undefined && !isWithinRules(unitPrice, rules)) {
+    throw new CheerkitError(
+      "INVALID_CONTEXT",
+      "One unit must cost an amount within the configured range.",
+    );
+  }
   return Object.freeze(rules);
+}
+
+function count(value: unknown, fallback: number, label: string): number {
+  if (value === undefined) return fallback;
+  if (
+    !Number.isSafeInteger(value) ||
+    (value as number) < 1 ||
+    (value as number) > 100
+  ) {
+    throw new CheerkitError(
+      "INVALID_CONTEXT",
+      `The unit ${label} must be a whole number from 1 to 100.`,
+    );
+  }
+  return value as number;
+}
+
+function supportUnit(input: unknown): SupportUnit {
+  const value = record(input);
+  allowKeys(value, ["one", "other", "icon", "start", "max"]);
+  const icon = value.icon ?? "coffee";
+  if (!unitIcons.includes(icon as UnitIcon)) {
+    throw new CheerkitError(
+      "INVALID_CONTEXT",
+      `Use one of these unit icons: ${unitIcons.join(", ")}.`,
+    );
+  }
+  const max = count(value.max, 20, "maximum");
+  const start = count(value.start, 1, "start");
+  if (start > max) {
+    throw new CheerkitError(
+      "INVALID_CONTEXT",
+      "The unit start must not exceed its maximum.",
+    );
+  }
+  return Object.freeze({
+    one: requiredText(value.one, 40),
+    other: requiredText(value.other, 40),
+    icon: icon as UnitIcon,
+    start,
+    max,
+  });
 }
 
 /** Validate and copy trusted context configuration; no page or slug is required. */
@@ -124,6 +212,7 @@ export function defineSupportContext(
     "currencies",
     "collectName",
     "collectMessage",
+    "unit",
   ]);
   if (!Array.isArray(value.currencies) || value.currencies.length === 0) {
     throw new CheerkitError(
@@ -148,5 +237,6 @@ export function defineSupportContext(
     currencies: Object.freeze(currencies),
     collectName: optionalBoolean(value.collectName, false),
     collectMessage: optionalBoolean(value.collectMessage, false),
+    ...(value.unit === undefined ? {} : { unit: supportUnit(value.unit) }),
   });
 }

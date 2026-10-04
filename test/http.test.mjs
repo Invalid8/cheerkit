@@ -866,3 +866,34 @@ test("the owner handler serves owner routes only, with the same origin and error
     { code: "INVALID_CONFIGURATION" },
   );
 });
+
+test("an owner can price units, and the public context offers them to the template", async (t) => {
+  const f = await fixture(t);
+  const priced = {
+    ...context,
+    unit: { one: "coffee", other: "coffees", icon: "coffee", start: 3 },
+    currencies: context.currencies.map((rules) => ({
+      ...rules,
+      unitPrice: "1500",
+    })),
+  };
+  const saved = await f.handler(
+    owner("/contexts/work", {
+      method: "PUT",
+      headers: { Origin: origin },
+      body: JSON.stringify({ context: priced, expectedRevision: 1 }),
+    }),
+  );
+  assert.equal(saved.status, 200);
+  const shown = await (
+    await f.handler(new Request(`${base}/contexts/work`))
+  ).json();
+  assert.deepEqual(shown.unit, {
+    one: "coffee",
+    other: "coffees",
+    icon: "coffee",
+    start: 3,
+    max: 20,
+  });
+  assert.equal(shown.currencies[0].unitPrice, "1500.00");
+});
