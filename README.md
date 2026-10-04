@@ -2,7 +2,7 @@
 
 Add one-off support payments to an app you already run. Your UI. Your database. Your payment provider. No hosted service in between.
 
-Cheerkit is the payment layer underneath: it records each contribution, confirms it only from the provider's signed webhooks, and gives the owner the tools to check, recover, and export it. It came out of Baseband, which wanted people to support the app inside its own experience instead of sending them to another platform; Baseband's support flow is built on it.
+Cheerkit is the payment layer underneath: it records each contribution, confirms it only from the provider's signed webhooks, and gives the owner the tools to check, recover, and export it. It came out of [Baseband](https://baseband.dalgoridim.com), which wanted people to support the app inside its own experience instead of sending them to another platform; Baseband's support flow is built on it.
 
 Supported provider: [Bachs](https://bachs.io). More are planned; see the [overview](docs/overview.md).
 
