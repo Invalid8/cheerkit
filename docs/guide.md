@@ -37,6 +37,8 @@ Cheerkit keeps its tables in your application's database and never creates, alte
    const database = sqliteDatabase(new DatabaseSync("app.sqlite")); // a DatabaseSync used only by Cheerkit
    ```
 
+   For Postgres, listen for connection errors on the pool and on each client (`pool.on("error", …)` and `pool.on("connect", (client) => client.on("error", …))`). Hosted databases such as Neon close connections when they idle or scale down, and `pg` reports a dropped connection as an `error` event that ends the process when nothing listens, even while Cheerkit holds that client in a transaction. With the listeners, only the affected call fails and the pool reconnects.
+
    For SQLite, enable `PRAGMA journal_mode = WAL`, `PRAGMA foreign_keys = ON`, and a busy timeout, and give Cheerkit its own `DatabaseSync` object so your statements never land inside its transactions.
 
 3. Open the store:
