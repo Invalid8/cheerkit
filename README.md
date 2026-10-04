@@ -1,10 +1,12 @@
 # Cheerkit
 
-One-off support payments ("buy me a coffee") inside an application you already run. You build the page and bring your payment provider account; Cheerkit records each contribution, confirms it only from the provider's signed webhooks, and gives the owner the tools to check, recover, and export it.
+Add one-off support payments to an app you already run. Your UI. Your database. Your payment provider. No hosted service in between.
+
+Cheerkit is the payment layer underneath: it records each contribution, confirms it only from the provider's signed webhooks, and gives the owner the tools to check, recover, and export it. It came out of Baseband, which wanted people to support the app inside its own experience instead of sending them to another platform; Baseband's support flow is built on it.
 
 Supported provider: [Bachs](https://bachs.io). More are planned; see the [overview](docs/overview.md).
 
-- **Your UI.** Cheerkit is headless: a JSON API, plus framework-free examples to copy.
+- **Your UI.** Cheerkit is headless: a JSON API you build on, or optional ready-made templates (`<cheerkit-support>`, `<cheerkit-admin>`) you can restyle.
 - **Your data.** Tables live in your own Postgres or SQLite database, created by migrations you apply. Payer details from the provider are never stored.
 - **Correct payments.** Exact decimal amounts, no double counting, no confirmation from browser redirects, and a review queue for anything that does not match.
 - **No service.** Each website runs its own copy with its own provider account. Nothing is sent anywhere else.
