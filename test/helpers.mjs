@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import pg from "pg";
-import { postgresDatabase } from "cheerkit/postgres";
-import { cheerkitMigrations, openStore } from "cheerkit/server";
-import { sqliteDatabase } from "cheerkit/sqlite";
+import { postgresDatabase } from "@dalgoridim/cheerkit/postgres";
+import { cheerkitMigrations, openStore } from "@dalgoridim/cheerkit/server";
+import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
 
 function postgresBin() {
   const root = "/usr/lib/postgresql";
@@ -32,7 +32,7 @@ export function postgresCluster() {
   const data = join(directory, "data");
   const init = spawnSync(
     tool("initdb"),
-    ["-D", data, "-A", "trust", "-U", "cheerkit"],
+    ["-D", data, "-A", "trust", "-U", "@dalgoridim/cheerkit"],
     { encoding: "utf8" },
   );
   if (init.status !== 0) throw new Error(`initdb failed: ${init.stderr}`);
@@ -56,7 +56,11 @@ export function postgresCluster() {
     spawnSync(tool("pg_ctl"), ["-D", data, "-m", "immediate", "stop"]);
     rmSync(directory, { recursive: true, force: true });
   });
-  return (cluster = { host: directory, port: 5432, user: "cheerkit" });
+  return (cluster = {
+    host: directory,
+    port: 5432,
+    user: "@dalgoridim/cheerkit",
+  });
 }
 
 export const dialects = () =>

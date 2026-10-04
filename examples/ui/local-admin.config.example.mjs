@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
-import { createBachsClient } from "cheerkit/bachs";
-import { openStore } from "cheerkit/server";
-import { sqliteDatabase } from "cheerkit/sqlite";
+import { createBachsClient } from "@dalgoridim/cheerkit/bachs";
+import { openStore } from "@dalgoridim/cheerkit/server";
+import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
 
 function required(name) {
   const value = process.env[name];

@@ -20,7 +20,7 @@ Cheerkit keeps its tables in your application's database and never creates, alte
 1. Get the migrations and apply them with your own tool, inside its transaction:
 
    ```ts
-   import { cheerkitMigrations } from "cheerkit/server";
+   import { cheerkitMigrations } from "@dalgoridim/cheerkit/server";
 
    const migrations = cheerkitMigrations({ prefix: "cheerkit_" }); // versions 1–3
    ```
@@ -30,10 +30,10 @@ Cheerkit keeps its tables in your application's database and never creates, alte
 2. Pass your connection through an adapter:
 
    ```ts
-   import { postgresDatabase } from "cheerkit/postgres";
+   import { postgresDatabase } from "@dalgoridim/cheerkit/postgres";
    const database = postgresDatabase(pool); // your pg Pool
 
-   import { sqliteDatabase } from "cheerkit/sqlite";
+   import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
    const database = sqliteDatabase(new DatabaseSync("app.sqlite")); // a DatabaseSync used only by Cheerkit
    ```
 
@@ -167,7 +167,7 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
 
 ```html
 <script type="module">
-  import "cheerkit/ui/define";
+  import "@dalgoridim/cheerkit/ui/define";
   for (const element of document.querySelectorAll("cheerkit-support"))
     element.config = {
       name: "Kemi Lawal",
@@ -187,7 +187,7 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
 ></cheerkit-support>
 ```
 
-- **Loading it:** with a bundler, `import "cheerkit/ui/define"`. Without one, serve the files in `node_modules/cheerkit/dist/ui/` from your site and import `define.js` by its path (`examples/ui/template.html` does this).
+- **Loading it:** with a bundler, `import "@dalgoridim/cheerkit/ui/define"`. Without one, serve the files in `node_modules/@dalgoridim/cheerkit/dist/ui/` from your site and import `define.js` by its path (`examples/ui/template.html` does this).
 - **Counting, not typing:** when the context has a `unit` and each currency a `unitPrice` (see [What people can support](#what-people-can-support)), supporters count units with − and + and see the total; "Enter a different amount" lets them type any amount within the limits instead. Without a unit, they type an amount. The owner can change the unit and prices in the admin's Contexts screen.
 - **One currency:** the supporter never chooses a currency. Pass the one to show with `currency="NGN"` (for example from the visitor's country, as Baseband does); without it, the context's first currency is used.
 - **Who is supported:** `config.avatar` shows a person's photo, `config.logo` a product or project logo, and `config.mark` a built-in square icon (`coffee`, `sprout`, `heart`, `book`, `radio`, `map`, `audio`). `config.where` adds one line on where the money goes.
@@ -198,7 +198,7 @@ If you don't want to build the page yourself, use `<cheerkit-support>`, a web co
 - **Theme tokens:** [`tokens/cheerkit.tokens.json`](../tokens/cheerkit.tokens.json) lists the default light and dark values in Design Tokens Community Group format. The same names map to the component's public `--ck-*` CSS properties.
 - **Your words:** every label and message can be changed through `config.text`; amounts are formatted for `config.locale`.
 - **Finer styling:** named parts (`card`, `header`, `avatar`, `question`, `stepper`, `step`, `units`, `total`, `where`, `input`, `button`, …) can be styled with `::part()`.
-- **Your own UI on the same logic:** `createSupport({ api, contextId })` from `cheerkit/ui` gives the state and actions the template uses.
+- **Your own UI on the same logic:** `createSupport({ api, contextId })` from `@dalgoridim/cheerkit/ui` gives the state and actions the template uses.
 
 The browser keeps only a random submission key and the result token, in `sessionStorage`, never the name, message, or amount. Units, prices, limits, and which fields appear come from the context on the server; the name and note step is skipped when the context collects neither.
 
@@ -228,12 +228,12 @@ Owner operations need the host's own sign-in: `authorizeOwner(request)` must ret
 **As a separate app** (a local admin, an internal tool): it needs only the store and the account's key.
 
 ```ts
-import { createBachsClient } from "cheerkit/bachs";
+import { createBachsClient } from "@dalgoridim/cheerkit/bachs";
 import {
   createOwnerHandler,
   createOwnerService,
   openStore,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 
 const store = await openStore({
   database,
@@ -289,7 +289,7 @@ It shares the support template's appearance settings and warns once in the brows
   <a slot="sign-in" href="/login">Sign in</a>
 </cheerkit-admin>
 <script type="module">
-  import "cheerkit/ui/define";
+  import "@dalgoridim/cheerkit/ui/define";
   document.querySelector("cheerkit-admin").config = { siteName: "Field Notes" };
 </script>
 ```
@@ -299,7 +299,7 @@ It shares the support template's appearance settings and warns once in the brows
 - Context edits use the revision check: if someone else saved first, nothing is overwritten and the owner is asked to load the latest settings.
 - It uses the same colour, theme, wording (`config.text`), and CSS variables as the support template. `config.screens` chooses which screens appear.
 - On narrow screens the navigation becomes a picker and tables become labelled cards.
-- To build your own admin instead, `createOwnerClient({ api })` from `cheerkit/ui` gives typed calls for every owner route.
+- To build your own admin instead, `createOwnerClient({ api })` from `@dalgoridim/cheerkit/ui` gives typed calls for every owner route.
 
 ### Run the same admin on your computer
 

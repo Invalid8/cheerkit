@@ -2,12 +2,15 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createHmac, randomBytes } from "node:crypto";
 import test from "node:test";
-import { createContributionIntent, defineSupportContext } from "cheerkit";
+import {
+  createContributionIntent,
+  defineSupportContext,
+} from "@dalgoridim/cheerkit";
 import {
   createBachsCheckoutClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
-import { cheerkitMigrations, openStore } from "cheerkit/server";
+} from "@dalgoridim/cheerkit/bachs";
+import { cheerkitMigrations, openStore } from "@dalgoridim/cheerkit/server";
 import { dialects, hostDatabase, testStore } from "./helpers.mjs";
 
 const time = 1_790_164_800;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { CheerkitError, normalizeAmount } from "cheerkit";
+import { CheerkitError, normalizeAmount } from "@dalgoridim/cheerkit";
 
 test("decimal input is normalized without rounding", () => {
   assert.equal(normalizeAmount("001000", 2), "1000.00");

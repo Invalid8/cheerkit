@@ -1,5 +1,8 @@
 // Local domain demonstration only: no checkout, persistence, or real payment.
-import { createContributionIntent, defineSupportContext } from "cheerkit";
+import {
+  createContributionIntent,
+  defineSupportContext,
+} from "@dalgoridim/cheerkit";
 
 const context = defineSupportContext({
   id: "personal",

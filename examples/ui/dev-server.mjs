@@ -7,16 +7,16 @@ import { Readable } from "node:stream";
 import {
   createBachsCheckoutClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 import { DatabaseSync } from "node:sqlite";
-import { sqliteDatabase } from "cheerkit/sqlite";
+import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
 import {
   cheerkitMigrations,
   createSupportHandler,
   createSupportService,
   openStore,
   startPendingWorker,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 
 // Local demonstration only: Bachs is replaced by a fake checkout page, and owner access by a development cookie.
 // Cheerkit accepts only HTTPS checkout URLs, so the fake provider issues https://localhost links and this plain-HTTP

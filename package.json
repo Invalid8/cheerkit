@@ -1,5 +1,5 @@
 {
-  "name": "cheerkit",
+  "name": "@dalgoridim/cheerkit",
   "version": "0.1.0",
   "description": "Headless one-off support payments for applications you already run: your UI, your database, verified provider webhooks.",
   "license": "MIT",

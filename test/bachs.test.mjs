@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { createHash, createHmac } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
-import { createContributionIntent, defineSupportContext } from "cheerkit";
+import {
+  createContributionIntent,
+  defineSupportContext,
+} from "@dalgoridim/cheerkit";
 import {
   BachsError,
   assessBachsCollection,
@@ -10,7 +13,7 @@ import {
   createBachsCheckoutClient,
   createBachsClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 
 const time = 1_790_164_800;
 const secret = "test-endpoint-secret";
@@ -575,8 +578,8 @@ test("browser export condition admits core and blocks the provider boundary", ()
       "--input-type=module",
       "-e",
       `
-    await import("cheerkit");
-    try { await import("cheerkit/bachs"); process.exit(1); }
+    await import("@dalgoridim/cheerkit");
+    try { await import("@dalgoridim/cheerkit/bachs"); process.exit(1); }
     catch (error) { if (error.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") throw error; }
   `,
     ],

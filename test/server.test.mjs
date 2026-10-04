@@ -5,12 +5,12 @@ import {
   createBachsCheckoutClient,
   createBachsClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 import {
   createOwnerService,
   createSupportService,
   openStore,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 import { hostDatabase } from "./helpers.mjs";
 
 const initialTime = Date.parse("2026-09-24T12:00:00Z");
@@ -800,7 +800,7 @@ test("historical uppercase submission keys reuse their original reservation", as
   const service = f.service();
   const key = randomUUID();
   const { createContributionIntent, defineSupportContext } =
-    await import("cheerkit");
+    await import("@dalgoridim/cheerkit");
   const intent = createContributionIntent(
     defineSupportContext(context),
     submission,
@@ -940,7 +940,7 @@ test("recovery refuses missing, undispatched, rejected, and conflicting contribu
     { code: "NOT_FOUND" },
   );
   const { createContributionIntent, defineSupportContext } =
-    await import("cheerkit");
+    await import("@dalgoridim/cheerkit");
   const intent = createContributionIntent(
     defineSupportContext(context),
     submission,

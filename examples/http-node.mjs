@@ -8,15 +8,15 @@ import { Readable } from "node:stream";
 import {
   createBachsCheckoutClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 import { DatabaseSync } from "node:sqlite";
-import { sqliteDatabase } from "cheerkit/sqlite";
+import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
 import {
   cheerkitMigrations,
   createSupportHandler,
   createSupportService,
   openStore,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 
 // Offline demonstration: provider traffic is synthetic; the HTTP server is real and listens on localhost only.
 const directory = mkdtempSync(join(tmpdir(), "cheerkit-http-example-"));

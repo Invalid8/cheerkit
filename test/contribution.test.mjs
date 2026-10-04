@@ -4,7 +4,7 @@ import {
   CheerkitError,
   createContributionIntent,
   defineSupportContext,
-} from "cheerkit";
+} from "@dalgoridim/cheerkit";
 
 const identity = {
   id: "contribution-1",

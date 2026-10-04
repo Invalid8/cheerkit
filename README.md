@@ -20,7 +20,7 @@ Supported provider: [Bachs](https://bachs.io). More are planned; see the [overvi
 ## Install
 
 ```sh
-npm install cheerkit
+npm install @dalgoridim/cheerkit
 ```
 
 ## Quick start
@@ -28,7 +28,7 @@ npm install cheerkit
 1. Apply the migrations with your own migration tool:
 
    ```ts
-   import { cheerkitMigrations } from "cheerkit/server";
+   import { cheerkitMigrations } from "@dalgoridim/cheerkit/server";
 
    for (const { version, sql } of cheerkitMigrations()) {
      // Save each as a migration file, in order.
@@ -41,14 +41,14 @@ npm install cheerkit
    import {
      createBachsCheckoutClient,
      createBachsWebhookVerifier,
-   } from "cheerkit/bachs";
-   import { postgresDatabase } from "cheerkit/postgres";
+   } from "@dalgoridim/cheerkit/bachs";
+   import { postgresDatabase } from "@dalgoridim/cheerkit/postgres";
    import {
      createSupportHandler,
      createSupportService,
      openStore,
      startPendingWorker,
-   } from "cheerkit/server";
+   } from "@dalgoridim/cheerkit/server";
 
    const scope = {
      organizationId: env.BACHS_ACCOUNT_ID,
@@ -129,15 +129,15 @@ npm install cheerkit
 
 ## Package
 
-| Import                        | For                                                                                                   | In browsers |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
-| `cheerkit`                    | Contexts, amounts, intents, metadata validation                                                       | Yes         |
-| `cheerkit/bachs`              | Bachs provider: clients and webhook verification                                                      | No          |
-| `cheerkit/postgres`           | Adapter for a `pg` pool (no dependency on `pg`)                                                       | No          |
-| `cheerkit/sqlite`             | Adapter for a `node:sqlite` database                                                                  | No          |
-| `cheerkit/server`             | Migrations, store, services, HTTP handlers, background worker                                         | No          |
-| `cheerkit/server/local-admin` | Local loopback-only admin runner (`startLocalAdmin`)                                                  | No          |
-| `cheerkit/ui`                 | Ready-made templates (`<cheerkit-support>`, `<cheerkit-admin>`), `createSupport`, `createOwnerClient` | Only        |
+| Import                                    | For                                                                                                   | In browsers |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------- |
+| `@dalgoridim/cheerkit`                    | Contexts, amounts, intents, metadata validation                                                       | Yes         |
+| `@dalgoridim/cheerkit/bachs`              | Bachs provider: clients and webhook verification                                                      | No          |
+| `@dalgoridim/cheerkit/postgres`           | Adapter for a `pg` pool (no dependency on `pg`)                                                       | No          |
+| `@dalgoridim/cheerkit/sqlite`             | Adapter for a `node:sqlite` database                                                                  | No          |
+| `@dalgoridim/cheerkit/server`             | Migrations, store, services, HTTP handlers, background worker                                         | No          |
+| `@dalgoridim/cheerkit/server/local-admin` | Local loopback-only admin runner (`startLocalAdmin`)                                                  | No          |
+| `@dalgoridim/cheerkit/ui`                 | Ready-made templates (`<cheerkit-support>`, `<cheerkit-admin>`), `createSupport`, `createOwnerClient` | Only        |
 
 The `cheerkit-admin` executable starts the local admin from a host-owned config module; see [the guide](docs/guide.md#run-the-same-admin-on-your-computer).
 

@@ -3,18 +3,18 @@ import { createHmac, randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { defineSupportContext } from "cheerkit";
+import { defineSupportContext } from "@dalgoridim/cheerkit";
 import {
   createBachsCheckoutClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 import { DatabaseSync } from "node:sqlite";
-import { sqliteDatabase } from "cheerkit/sqlite";
+import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
 import {
   cheerkitMigrations,
   createSupportService,
   openStore,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 
 // Offline demonstration: all provider traffic is replaced with synthetic responses.
 const directory = mkdtempSync(join(tmpdir(), "cheerkit-example-"));

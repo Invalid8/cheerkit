@@ -1,8 +1,8 @@
 import { DatabaseSync } from "node:sqlite";
 import pg from "pg";
-import { postgresDatabase } from "cheerkit/postgres";
-import { openStore } from "cheerkit/server";
-import { sqliteDatabase } from "cheerkit/sqlite";
+import { postgresDatabase } from "@dalgoridim/cheerkit/postgres";
+import { openStore } from "@dalgoridim/cheerkit/server";
+import { sqliteDatabase } from "@dalgoridim/cheerkit/sqlite";
 
 const [dialect, target, eventId] = process.argv.slice(2);
 const connection = JSON.parse(target);

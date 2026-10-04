@@ -5,7 +5,7 @@ import {
   createBachsCheckoutClient,
   createBachsClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 import {
   createOwnerHandler,
   createOwnerService,
@@ -14,7 +14,7 @@ import {
   openStore,
   runPendingPass,
   startPendingWorker,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 import { hostDatabase } from "./helpers.mjs";
 
 const initialTime = Date.parse("2026-09-24T12:00:00Z");
@@ -330,7 +330,7 @@ test("webhooks acknowledge only after durable acceptance and ask for retry when 
 });
 
 test("storage failures after acceptance return a retryable 503", async (t) => {
-  const { CheerkitStoreError } = await import("cheerkit/server");
+  const { CheerkitStoreError } = await import("@dalgoridim/cheerkit/server");
   const g = await fixture(t, {
     store: (store) => ({
       ...store,

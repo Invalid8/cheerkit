@@ -2,16 +2,16 @@
 
 Everything Cheerkit exports, by import path. For how to put it together, see the [guide](guide.md).
 
-- [`cheerkit`](#cheerkit)
-- [`cheerkit/bachs`](#cheerkitbachs)
-- [`cheerkit/postgres` and `cheerkit/sqlite`](#cheerkitpostgres-and-cheerkitsqlite)
-- [`cheerkit/server`](#cheerkitserver): [migrations](#migrations), [store](#store), [support service](#support-service), [owner service](#owner-service), [HTTP handlers](#http-handlers), [routes](#routes), [background work](#background-work)
-- [`cheerkit/ui`](#cheerkitui): [`<cheerkit-support>`](#cheerkit-support), [`createSupport`](#createsupportoptions), [`<cheerkit-admin>`](#cheerkit-admin), [`createOwnerClient`](#createownerclientoptions)
+- [`@dalgoridim/cheerkit`](#dalgoridimcheerkit)
+- [`@dalgoridim/cheerkit/bachs`](#dalgoridimcheerkitbachs)
+- [`@dalgoridim/cheerkit/postgres` and `@dalgoridim/cheerkit/sqlite`](#dalgoridimcheerkitpostgres-and-dalgoridimcheerkitsqlite)
+- [`@dalgoridim/cheerkit/server`](#dalgoridimcheerkitserver): [migrations](#migrations), [store](#store), [support service](#support-service), [owner service](#owner-service), [HTTP handlers](#http-handlers), [routes](#routes), [background work](#background-work)
+- [`@dalgoridim/cheerkit/ui`](#dalgoridimcheerkitui): [`<cheerkit-support>`](#cheerkit-support), [`createSupport`](#createsupportoptions), [`<cheerkit-admin>`](#cheerkit-admin), [`createOwnerClient`](#createownerclientoptions)
 - [Contribution status](#contribution-status)
 - [Payments: fee, settlement, statement](#payments-fee-settlement-statement)
 - [Errors](#errors)
 
-## `cheerkit`
+## `@dalgoridim/cheerkit`
 
 Safe in browsers.
 
@@ -29,7 +29,7 @@ Safe in browsers.
 
 **Submission:** `{ amount, currency, supporterName? (≤ 120), message? (≤ 2,000) }`. Anything else is rejected; name and message are refused unless the context collects them.
 
-## `cheerkit/bachs`
+## `@dalgoridim/cheerkit/bachs`
 
 Server only.
 
@@ -73,7 +73,7 @@ The account-level client, for an owner app: `secretKey`, `organizationId`, `envi
 
 `assessBachsCollection(event, expected)` and `checkoutPaidAsIntended(event, expected)` match a verified event to a known checkout without recording anything. The store uses them; you rarely need them.
 
-## `cheerkit/postgres` and `cheerkit/sqlite`
+## `@dalgoridim/cheerkit/postgres` and `@dalgoridim/cheerkit/sqlite`
 
 | Export                   | Takes                                                                                                                                           |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -82,7 +82,7 @@ The account-level client, for an owner app: `secretKey`, `organizationId`, `envi
 
 Both return a `CheerkitDatabase`: `query(sql, params)` and `transaction(lockKey, work)`.
 
-## `cheerkit/server`
+## `@dalgoridim/cheerkit/server`
 
 Server only.
 
@@ -226,7 +226,7 @@ Callbacks receive counts and error codes only.
 
 ### Local admin runner
 
-Available from `cheerkit/server/local-admin`:
+Available from `@dalgoridim/cheerkit/server/local-admin`:
 
 ```ts
 const app = await startLocalAdmin(
@@ -239,9 +239,9 @@ await app.close();
 
 `LocalAdminConfig` requires the existing `store` and `bachs` client; `siteName` and `close` are optional. The runner binds only to `127.0.0.1`, serves the shared `<cheerkit-admin>` UI, and uses an in-memory 12-hour session. It never serializes the store or Bachs client to the browser. The `cheerkit-admin` executable accepts `--config <module.mjs>` and `--port <0–65535>`; port 0 is the default.
 
-## `cheerkit/ui`
+## `@dalgoridim/cheerkit/ui`
 
-Browser only. `cheerkit/ui/define` registers the elements when imported; `cheerkit/ui` exports the classes and helpers without registering anything.
+Browser only. `@dalgoridim/cheerkit/ui/define` registers the elements when imported; `@dalgoridim/cheerkit/ui` exports the classes and helpers without registering anything.
 
 ### `<cheerkit-support>`
 
@@ -321,7 +321,7 @@ Cheerkit never converts currencies or computes a net amount. When a payment is c
 
 ## Errors
 
-Validation, from `cheerkit` (`CheerkitError.code`): `INVALID_INPUT`, `INVALID_AMOUNT`, `INVALID_CONTEXT`, `CONTEXT_CLOSED`, `UNSUPPORTED_CURRENCY`, `AMOUNT_OUT_OF_RANGE`, `FIELD_DISABLED`. Messages never echo submitted values.
+Validation, from `@dalgoridim/cheerkit` (`CheerkitError.code`): `INVALID_INPUT`, `INVALID_AMOUNT`, `INVALID_CONTEXT`, `CONTEXT_CLOSED`, `UNSUPPORTED_CURRENCY`, `AMOUNT_OUT_OF_RANGE`, `FIELD_DISABLED`. Messages never echo submitted values.
 
 Bachs (`BachsError.code`): `INVALID_CONFIGURATION`, `INVALID_CHECKOUT`, `CHECKOUT_REJECTED`, `CHECKOUT_UNCERTAIN` (recover; do not assume failure), `RECOVERY_FAILED`, `RESEND_FAILED`, `LOOKUP_FAILED`, `INVALID_SIGNATURE`, `INVALID_EVENT`, `WRONG_ACCOUNT`.
 

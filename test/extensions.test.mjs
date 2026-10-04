@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { createHmac, randomUUID } from "node:crypto";
 import test from "node:test";
-import { validateMetadata } from "cheerkit";
+import { validateMetadata } from "@dalgoridim/cheerkit";
 import {
   createBachsCheckoutClient,
   createBachsWebhookVerifier,
-} from "cheerkit/bachs";
+} from "@dalgoridim/cheerkit/bachs";
 import {
   createSupportHandler,
   createSupportService,
   openStore,
-} from "cheerkit/server";
+} from "@dalgoridim/cheerkit/server";
 import { hostDatabase } from "./helpers.mjs";
 
 const initialTime = Date.parse("2026-09-24T12:00:00Z");
